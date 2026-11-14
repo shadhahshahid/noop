@@ -47,9 +47,13 @@ struct ForkMoreItem: Identifiable {
 }
 
 enum ForkMoreIndex {
+    /// The fork release this build belongs to. Shown under About so the wearer can tell which build
+    /// is installed: fork builds keep upstream's version number, so the number alone cannot say.
+    static let releaseName = "Feel"
+
     private static var versionLine: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        return version.map { "Version \($0), your own build" } ?? "Your own build"
+        return version.map { "Version \($0), your own build: \(releaseName)" } ?? "Your own build: \(releaseName)"
     }
 
     /// The ten rows the More tab shows at rest.

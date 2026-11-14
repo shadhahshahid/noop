@@ -17,9 +17,15 @@ final class LiquidSkyMotionTests: XCTestCase {
         }
     }
 
-    func testStarryHoursKeepTheTwinkleInDarkAppearance() {
-        for hour in [0.0, 3.0, 5.0, 21.5, 23.5] {
-            XCTAssertFalse(LiquidSky.pausesFrames(hour: hour, light: false, poseStill: false), "hour \(hour)")
+    /// Personal fork: the dark sky is one near-black atmosphere with no stars at any hour (see
+    /// `liquidSkyKeys`), so there is never a star to twinkle and the frame loop never runs. Upstream
+    /// pinned the opposite here (`testStarryHoursKeepTheTwinkleInDarkAppearance`): its dark sky had stars
+    /// at night.
+    func testForkDarkSkyHasNoStarsAndNeverRunsTheLoop() {
+        for minute in 0..<(24 * 60) {
+            let hour = Double(minute) / 60
+            XCTAssertFalse(liquidSkyHasVisibleStars(liquidSkyAt(hour, light: false).stars), "minute \(minute)")
+            XCTAssertTrue(LiquidSky.pausesFrames(hour: hour, light: false, poseStill: false), "minute \(minute)")
         }
     }
 
@@ -54,15 +60,9 @@ final class LiquidSkyMotionTests: XCTestCase {
         XCTAssertTrue(LiquidSky.pausesFrames(hour: 23.5, light: true, poseStill: true))
     }
 
-    /// A star is drawn once the nearest one, at the peak of its twinkle, reaches opacity 0.02: a star amount of
-    /// 0.02 / 0.48. Dark keyframes 6.5 h (0.06) → 8.5 h (0) and 17.5 h (0) → 19.5 h (0.05) cross it near 7:07 and
-    /// 19:10. (Light appearance never runs the loop: `testLightAppearanceNeverRunsTheLoop`.)
-    func testTheLoopFollowsTheDrawableStarsAtDawnAndDusk() {
-        XCTAssertFalse(LiquidSky.pausesFrames(hour: 7.05, light: false, poseStill: false))
-        XCTAssertTrue(LiquidSky.pausesFrames(hour: 7.15, light: false, poseStill: false))
-        XCTAssertTrue(LiquidSky.pausesFrames(hour: 19.1, light: false, poseStill: false))
-        XCTAssertFalse(LiquidSky.pausesFrames(hour: 19.25, light: false, poseStill: false))
-    }
+    // Personal fork: upstream's `testTheLoopFollowsTheDrawableStarsAtDawnAndDusk` pinned the minutes
+    // at which stars fade in and out of the dark sky. The fork's dark sky has no stars, so there is no
+    // such crossing to pin; `testForkDarkSkyHasNoStarsAndNeverRunsTheLoop` covers the whole day instead.
 
     /// At every minute of the day, in both appearances: while the loop is stopped no star, at any depth and at any
     /// point of its twinkle, both reaches the drawing floor and lifts a pixel by `liquidStarMinLift` levels, so

@@ -12,7 +12,8 @@
 #       Installs the app on that simulator and writes one PNG per screen into <out-dir>.
 #       "shell" is the full tab shell on its first tab and "tab1" … "tab4" open it on another tab;
 #       every other name is passed to `--demo-screen <name>` (see DemoScreens in
-#       StrandiOS/App/StrandiOSApp.swift). With no screen names, a default set is captured.
+#       StrandiOS/App/StrandiOSApp.swift). Add "-light" to any name to capture it in the light
+#       theme. With no screen names, a default set is captured.
 
 set -euo pipefail
 
@@ -48,7 +49,8 @@ capture() {
   shift 3
   local screens=("$@")
   if [ "${#screens[@]}" -eq 0 ]; then
-    screens=(shell tab1 tab2 tab3 tab4 forkmore forkstrap forkprofile forkscores live health settings)
+    screens=(shell tab1 tab2 tab3 tab4 forkmore forkstrap forkprofile forkscores live health
+             shell-light forkmore-light)
   fi
 
   [ -d "$app" ] || { echo "no such app bundle: $app"; exit 1; }
@@ -70,11 +72,21 @@ capture() {
   local name
   for name in "${screens[@]}"; do
     xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+    local base="$name"
+    local args=(--demo-seed)
     case "$name" in
-      shell) xcrun simctl launch "$udid" "$bundle_id" --demo-seed ;;
-      tab[0-4]) xcrun simctl launch "$udid" "$bundle_id" --demo-seed --demo-tab "${name#tab}" ;;
-      *) xcrun simctl launch "$udid" "$bundle_id" --demo-seed --demo-screen "$name" ;;
+      *-light)
+        base="${name%-light}"
+        # An argument-domain default: forces the app's own Theme setting to Light for this launch.
+        args+=(-theme.appearance light)
+        ;;
     esac
+    case "$base" in
+      shell) ;;
+      tab[0-4]) args+=(--demo-tab "${base#tab}") ;;
+      *) args+=(--demo-screen "$base") ;;
+    esac
+    xcrun simctl launch "$udid" "$bundle_id" "${args[@]}"
     sleep "$DRAW_WAIT"
     xcrun simctl io "$udid" screenshot "$out/$name.png"
     echo "captured $name"
