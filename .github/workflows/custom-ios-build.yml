@@ -69,6 +69,13 @@ jobs:
           rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
           zip -qr "$IPA" Payload
           ls -l "$IPA"
+      - name: Verify the packaged .ipa (identity, widget, capabilities, code seal)
+        # Runs on the finished archive, so it also catches a fault introduced by packaging itself.
+        # A failure here stops the run before anything is published.
+        env:
+          IPA: ${{ steps.v.outputs.ipa }}
+          VER: ${{ steps.v.outputs.ver }}
+        run: Tools/custom-verify-ios-ipa.sh "$IPA" com.noopapp.noop "$VER"
       - name: Publish prerelease with the .ipa
         env:
           GH_TOKEN: ${{ github.token }}
