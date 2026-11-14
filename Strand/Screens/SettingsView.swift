@@ -21,6 +21,10 @@ struct SettingsView: View {
     @EnvironmentObject var live: LiveState
     @EnvironmentObject var profile: ProfileStore
 
+    /// Personal fork: when set, this page shows only that group's cards (opened from the More menu).
+    /// nil is upstream's whole page, unchanged.
+    var group: ForkSettingsGroup? = nil
+
     /// Profile-photo picker selection (PhotosUI). Cleared back to nil once the bytes are loaded.
     @State private var avatarPickerItem: PhotosPickerItem?
 
@@ -253,13 +257,14 @@ struct SettingsView: View {
     @AppStorage(SettingsDisclosureDefaults.advancedOpenKey) private var advancedOpen = SettingsDisclosureDefaults.advancedOpenDefault
 
     var body: some View {
-        ScreenScaffold(title: "Settings",
-                       subtitle: "Your numbers, your strap, and how NOOP works. All on \(Platform.deviceNounPhrase).",
+        ScreenScaffold(title: group?.title ?? "Settings",
+                       subtitle: group == nil ? "Your numbers, your strap, and how NOOP works. All on \(Platform.deviceNounPhrase)." : nil,
                        // The day-of-sky liquid backdrop, matching Today / Health / Sleep / Trends / Devices:
                        // a fixed, full-bleed time-of-day sky behind the scroll content (it does not scroll).
                        // Settings' own frosted cards sit on the dark canvas below the sky band, unchanged.
                        topBackground: liquidScaffoldSky()) {
             VStack(alignment: .leading, spacing: NoopMetrics.sectionSpacing) {
+                if let group { forkGroupCards(group) } else {
                 // Everyday sections stay expanded (S3): the ones a first-run user actually needs.
                 profileCard.staggeredAppear(index: 0)
                 unitsCard.staggeredAppear(index: 1)
@@ -293,6 +298,7 @@ struct SettingsView: View {
 
                 // About stays expanded at the foot (version, links and the help sheets people return to).
                 aboutCard.staggeredAppear(index: 7)
+                }
             }
         }
         .alert(backupAlertTitle, isPresented: $showBackupAlert) {
@@ -2769,6 +2775,53 @@ struct SettingsView: View {
             .fill(StrandPalette.hairline)
             .frame(height: 1)
             .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Personal fork: Settings groups
+//
+// Which cards each More-menu group shows. Same cards, same state and same alerts as the whole page;
+// a group only narrows what is on screen.
+extension SettingsView {
+    @ViewBuilder
+    fileprivate func forkGroupCards(_ group: ForkSettingsGroup) -> some View {
+        switch group {
+        case .profile:
+            profileCard
+        case .strap:
+            strapCard
+            forkSyncCard
+            hrvCard
+        case .look:
+            appearanceCard
+        case .alerts:
+            forkLiveNotificationsCard
+        case .scores:
+            unitsCard
+            recoveryCard
+            streakCard
+        case .backup:
+            backupCard
+        case .advanced:
+            featuresCard
+            experimentalCard
+            testCentreCard
+        case .about:
+            aboutCard
+        }
+    }
+
+    // The two iOS-only cards, wrapped so the switch above stays free of conditional compilation.
+    @ViewBuilder private var forkSyncCard: some View {
+        #if os(iOS)
+        syncCard
+        #endif
+    }
+
+    @ViewBuilder private var forkLiveNotificationsCard: some View {
+        #if os(iOS)
+        liveNotificationsCard
+        #endif
     }
 }
 

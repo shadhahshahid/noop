@@ -10,9 +10,9 @@
 #       Prints "<udid> <name>" of an available iPhone simulator on the newest installed iOS runtime.
 #   Tools/custom-ios-screenshots.sh capture <path/to/NOOP.app> <udid> <out-dir> [screen ...]
 #       Installs the app on that simulator and writes one PNG per screen into <out-dir>.
-#       "shell" is the full tab shell; every other name is passed to `--demo-screen <name>`
-#       (see DemoScreens in StrandiOS/App/StrandiOSApp.swift). With no screen names, a default
-#       set is captured.
+#       "shell" is the full tab shell on its first tab and "tab1" … "tab4" open it on another tab;
+#       every other name is passed to `--demo-screen <name>` (see DemoScreens in
+#       StrandiOS/App/StrandiOSApp.swift). With no screen names, a default set is captured.
 
 set -euo pipefail
 
@@ -48,7 +48,7 @@ capture() {
   shift 3
   local screens=("$@")
   if [ "${#screens[@]}" -eq 0 ]; then
-    screens=(shell liquidtoday trends sleep workouts live health insights explore settings)
+    screens=(shell tab1 tab2 tab3 tab4 forkmore forkstrap forkprofile forkscores live health settings)
   fi
 
   [ -d "$app" ] || { echo "no such app bundle: $app"; exit 1; }
@@ -70,11 +70,11 @@ capture() {
   local name
   for name in "${screens[@]}"; do
     xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
-    if [ "$name" = "shell" ]; then
-      xcrun simctl launch "$udid" "$bundle_id" --demo-seed
-    else
-      xcrun simctl launch "$udid" "$bundle_id" --demo-seed --demo-screen "$name"
-    fi
+    case "$name" in
+      shell) xcrun simctl launch "$udid" "$bundle_id" --demo-seed ;;
+      tab[0-4]) xcrun simctl launch "$udid" "$bundle_id" --demo-seed --demo-tab "${name#tab}" ;;
+      *) xcrun simctl launch "$udid" "$bundle_id" --demo-seed --demo-screen "$name" ;;
+    esac
     sleep "$DRAW_WAIT"
     xcrun simctl io "$udid" screenshot "$out/$name.png"
     echo "captured $name"

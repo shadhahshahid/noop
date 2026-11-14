@@ -2359,7 +2359,9 @@ private struct SleepPerformanceNightScene: View {
     @AppStorage(SceneBackgroundPrefs.enabledKey) private var showDayCycleBackground = true
 
     var body: some View {
-        if showDayCycleBackground { nightScene } else { StrandPalette.surfaceBase }
+        // Personal fork: a plain canvas behind the Sleep score. The painted night scene is never
+        // drawn, whatever the day-cycle background setting says.
+        StrandPalette.surfaceBase
     }
 
     /// The bundled night scene (moonlit lake + procedural fallback). Shown only when the day-cycle

@@ -573,6 +573,11 @@ enum DemoScreens {
         let args = CommandLine.arguments
         guard let i = args.firstIndex(of: "--demo-screen"), i + 1 < args.count else { return nil }
         switch args[i + 1].lowercased() {
+        // Personal fork: the redesigned More menu, one of its lists and two Settings groups.
+        case "forkmore": return AnyView(ScreenScaffold(title: "More") { ForkMoreMenu(coachEnabled: false) })
+        case "forkstrap": return AnyView(ForkMoreGroupPage(group: .strap))
+        case "forkprofile": return AnyView(SettingsView(group: .profile))
+        case "forkscores": return AnyView(SettingsView(group: .scores))
         case "today":    return AnyView(TodayView())
         // The DEFAULT iOS Today (`noop.liquidTodayEnabled` ships true), so it needs its own entry — plain
         // "today" renders the CLASSIC screen, which is exactly the screen whose behaviour Liquid was found

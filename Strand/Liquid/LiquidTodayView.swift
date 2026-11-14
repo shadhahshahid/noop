@@ -358,7 +358,9 @@ struct LiquidTodayView: View {
                     // here as the SAME leaf the classic TodayView renders (and Android's WorkoutInProgressCard),
                     // pinned above the reorderable block so an active manual workout is immediately visible
                     // and opens the existing workout flow. Today also offers Start when no workout is active.
-                    ActiveWorkoutIndicatorSection(showStart: selectedDayOffset == 0)
+                    // Personal fork: the Start control is the one-tap row under the hero (ForkQuickStarts),
+                    // so this only shows the card for a session already in progress.
+                    ActiveWorkoutIndicatorSection(showStart: false)
                     // #today-layout (parity with Android): every Today section — the Charge/Effort/Rest hero
                     // and Start-session included — renders in the user's saved order. Reorder via the Arrange
                     // sheet (the header's up/down button; native drag rows); the order persists under the
@@ -367,10 +369,15 @@ struct LiquidTodayView: View {
                     ForEach(sectionOrder) { section in
                         switch section {
                         case .hero:
-                            heroCard
+                            // Personal fork: one score with its verdict, drivers and Effort target, then
+                            // the one-tap starts. See Strand/Fork/ForkToday.swift.
+                            forkHero
                             if chargeLegacyRRGap { ChargeLegacyRRGapNote() }
+                            if selectedDayOffset == 0 { ForkQuickStarts(surfaceOpacity: cardOpacity) }
                         case .liveSession: if liveSessionsBeta { liveSessionStartRow }
-                        case .synthesis: synthesisSection
+                        // Personal fork: the verdict and its sentence live in the hero above, so the
+                        // separate synthesis card would only repeat them.
+                        case .synthesis: EmptyView()
                         case .keyMetrics: keyMetricsSection
                         case .workouts: lastWorkoutsSection
                         case .heartRate: heartRateSection
@@ -654,9 +661,8 @@ struct LiquidTodayView: View {
             // #today-layout: the hero + Start-session row moved OUT of the scene into the reorderable
             // section block below. The wordmark's bottom pad (10) + the section VStack's 12 spacing keeps
             // the default hero-under-wordmark gap at the original 22.
-            LiquidWordmark()
-                .padding(.top, 30)
-                .padding(.bottom, 10)
+            // Personal fork: no wordmark between the header and the hero; a plain gap instead.
+            Color.clear.frame(height: 14)
         }
     }
 
@@ -3214,5 +3220,87 @@ private extension View {
             LiveSessionView(onClose: { isPresented.wrappedValue = false })
         }
         #endif
+    }
+}
+
+// MARK: - Personal fork: the single-score Today hero
+//
+// Resolves the plain values `ForkTodayHero` draws from the SAME state every other read-out on this
+// screen uses (`chargeDisplay`, `readiness`, `effortStrain`, `restScore`), so the hero cannot disagree
+// with the cards below it. Appended at the end of the file to keep upstream merges simple.
+extension LiquidTodayView {
+    private var forkHeroModel: ForkTodayHeroModel {
+        let verdict: String
+        switch readiness.level {
+        case .primed: verdict = String(localized: "Ready")
+        case .balanced: verdict = String(localized: "Steady")
+        case .strained, .rundown: verdict = String(localized: "Low")
+        case .insufficient: verdict = chargeDisplay.stateLabel
+        }
+
+        var caption: String?
+        if case .carried(_, let stamp) = chargeDisplay { caption = stamp }
+
+        var drivers: [ForkDriver] = []
+        if let rest = restScore {
+            drivers.append(ForkDriver(id: "sleep", label: String(localized: "Sleep"),
+                                      value: String(Int(rest.rounded())),
+                                      tone: rest >= 85 ? .good : (rest >= 70 ? .neutral : .watch)))
+        }
+        var details: [String] = []
+        for signal in readiness.signals {
+            details.append("\(signal.label): \(signal.detail)")
+            guard drivers.count < 3 else { continue }
+            let value: String
+            switch signal.evidenceData {
+            case .metric(let v, _, let unit, let decimals):
+                let number = decimals == 0 ? String(Int(v.rounded())) : String(format: "%.\(decimals)f", v)
+                value = "\(number) \(unit)"
+            case .trainingLoad(let acute, let chronic):
+                value = chronic > 0 ? String(format: "%.1f×", acute / chronic) : "–"
+            case .monotony(let m):
+                value = String(format: "%.1f", m)
+            case .none:
+                value = "–"
+            }
+            let tone: ForkDriver.Tone
+            switch signal.flag {
+            case .good: tone = .good
+            case .neutral: tone = .neutral
+            case .watch: tone = .watch
+            case .bad: tone = .bad
+            }
+            drivers.append(ForkDriver(id: signal.key, label: signal.label, value: value, tone: tone))
+        }
+        if let why = chargeDisplay.calibrationReason(
+            dayKeys: repo.days.map(\.day), nightlyHrv: repo.days.map(\.avgHrv),
+            today: Repository.logicalDayKey(Date())) {
+            details.append(why)
+        }
+
+        // Today's target band is the display-only recovery→strain mapping (#43), on the 0–21 axis.
+        // Convert it to the stored 0–100 axis, then to the wearer's chosen display scale.
+        let scale = effortScale
+        let target: ClosedRange<Double>? = CoupledView.optimalStrainRange(recovery: chargeDisplay.pct).map { band in
+            let low = UnitFormatter.effortValue(StrainScorer.effortValue(fromWhoopStrain: Double(band.lowerBound)), scale: scale)
+            let high = UnitFormatter.effortValue(StrainScorer.effortValue(fromWhoopStrain: Double(band.upperBound)), scale: scale)
+            return low...max(low, high)
+        }
+
+        return ForkTodayHeroModel(
+            charge: chargeDisplay.pct,
+            verdict: verdict,
+            sentence: chargeDisplay.calibrationDetail ?? synthLine,
+            caption: caption,
+            drivers: drivers,
+            details: details,
+            effort: effortStrain(displayDay).map { UnitFormatter.effortValue($0, scale: scale) },
+            effortMax: scale == .whoop ? 21 : 100,
+            effortDecimals: scale == .whoop ? 1 : 0,
+            effortTarget: target)
+    }
+
+    private var forkHero: some View {
+        ForkTodayHero(model: forkHeroModel, surfaceOpacity: cardOpacity, animated: dataLoaded)
     }
 }
