@@ -63,15 +63,18 @@ struct NoopButtonAppearance {
     init(_ kind: NoopButtonKind) {
         switch kind {
         case .primary:
-            fill = StrandPalette.accent
-            label = StrandPalette.goldDeepText   // designated crisp white for text on accent fills
+            // Personal fork: the primary action is the brightest neutral on the screen (white on the
+            // dark theme, ink on the light one), so colour stays reserved for state.
+            fill = StrandPalette.textPrimary
+            label = StrandPalette.surfaceBase
             border = nil
             usesPanelSurface = false
         case .secondary:
-            fill = nil
+            // Personal fork: a control fill one step above the card, since cards no longer have a rim.
+            fill = StrandPalette.surfaceOverlay
             label = StrandPalette.textPrimary
             border = nil
-            usesPanelSurface = true
+            usesPanelSurface = false
         case .tertiary:
             fill = nil
             label = StrandPalette.accent

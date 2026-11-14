@@ -8,23 +8,25 @@ import SwiftUI
 
 public enum NoopVisualStyle {
     // Neutral, low-chroma surfaces sampled from the supplied dark-mode reference.
-    public static let canvas = Color(light: "#F3F4F6", dark: "#1D1E23")
-    public static let surface = Color(light: "#FFFFFF", dark: "#2A2C34")
-    public static let surfaceTop = Color(light: "#FFFFFF", dark: "#30323B")
-    public static let surfaceBottom = Color(light: "#F4F5F7", dark: "#282A31")
-    public static let inset = Color(light: "#E8E9ED", dark: "#23252C")
+    // Personal fork: the DARK values follow the fork's redesign (near-black canvas, cards told apart
+    // by fill alone, colour reserved for state). Light values are upstream's, unchanged.
+    public static let canvas = Color(light: "#F3F4F6", dark: "#0B0D10")
+    public static let surface = Color(light: "#FFFFFF", dark: "#14181D")
+    public static let surfaceTop = Color(light: "#FFFFFF", dark: "#1C2128")
+    public static let surfaceBottom = Color(light: "#F4F5F7", dark: "#14181D")
+    public static let inset = Color(light: "#E8E9ED", dark: "#1C2128")
 
-    public static let border = Color(light: "#D8DAE0", dark: "#373A44")
-    public static let borderHighlight = Color(light: "#FFFFFF", dark: "#4B4E59")
-    public static let divider = Color(light: "#E4E5E9", dark: "#383A43")
+    public static let border = Color(light: "#D8DAE0", dark: "#232930")
+    public static let borderHighlight = Color(light: "#FFFFFF", dark: "#2A3038")
+    public static let divider = Color(light: "#E4E5E9", dark: "#232930")
 
-    public static let primaryText = Color(light: "#17181C", dark: "#F7F7FA")
-    public static let secondaryText = Color(light: "#555861", dark: "#C3C4CA")
-    public static let tertiaryText = Color(light: "#7D808A", dark: "#7D7F88")
+    public static let primaryText = Color(light: "#17181C", dark: "#F2F4F7")
+    public static let secondaryText = Color(light: "#555861", dark: "#A9B1BD")
+    public static let tertiaryText = Color(light: "#7D808A", dark: "#7E8794")
 
-    public static let mint = Color(light: "#149A78", dark: "#69DDB8")
-    public static let mintDeep = Color(light: "#0D765C", dark: "#13A982")
-    public static let mintGlow = Color(light: "#38C99E", dark: "#54E6BD")
+    public static let mint = Color(light: "#149A78", dark: "#3DDC97")
+    public static let mintDeep = Color(light: "#0D765C", dark: "#22B877")
+    public static let mintGlow = Color(light: "#38C99E", dark: "#5BE8AB")
 
     public static let cardRadius: CGFloat = 22
     public static let compactRadius: CGFloat = 16
@@ -64,12 +66,9 @@ public struct NoopPanelSurface: View {
         // Scrolling stacks contain many panels. Layered translucent gradients and blurred shadows
         // multiply their compositing work, so iOS uses one theme-aware fill and a thin tinted rim.
         // This changes decorative depth only; card geometry and the design-system colors stay the same.
+        // Personal fork: no rim. A card is told apart from the canvas by its fill alone.
         shape
             .fill(NoopVisualStyle.surface)
-            .overlay(shape.strokeBorder(
-                tint?.opacity(0.14) ?? NoopVisualStyle.borderHighlight.opacity(elevated ? 0.9 : 0.65),
-                lineWidth: 0.8
-            ))
             .opacity(surfaceOpacity)
         #else
         shape
