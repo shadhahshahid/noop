@@ -1,0 +1,86 @@
+# Personal fork only (not upstream): build the unsigned iPhone .ipa from the branch this is run on
+# and attach it to a GitHub prerelease, ready to install with AltStore.
+#
+# The build steps mirror the `ios` job of fork-release.yml exactly, so the result differs from an
+# official release only in the source it was built from. It keeps the production bundle id
+# (com.noopapp.noop), so AltStore installs it OVER an existing NOOP and iOS keeps the app's data.
+#
+# Deliberately left out, compared with fork-release.yml: the version-bump commit, the Android and
+# macOS builds, and the push to altstore-source.json. Nothing here writes to any branch.
+name: Custom iPhone build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: custom-ios-build
+  cancel-in-progress: false
+
+jobs:
+  ios:
+    # iOS 26 Liquid Glass (glassEffect) needs the iOS 26 SDK -> Xcode 26 -> macos-26.
+    runs-on: macos-26
+    timeout-minutes: 40
+    # Creates the prerelease and uploads the .ipa to it.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Read version from project.yml
+        id: v
+        run: |
+          set -euo pipefail
+          VER=$(grep -m1 'MARKETING_VERSION:' project.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION:' project.yml | sed -E 's/.*"([^"]+)".*/\1/')
+          test -n "$VER" && test -n "$BUILD" || { echo "could not read version from project.yml"; exit 1; }
+          echo "ver=$VER" >> "$GITHUB_OUTPUT"
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "tag=custom-v${VER}-r${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "ipa=NOOP-ios-unsigned-v${VER}-custom-r${GITHUB_RUN_NUMBER}.ipa" >> "$GITHUB_OUTPUT"
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Build NOOPiOS for device (unsigned, Release)
+        run: >-
+          xcodebuild -scheme NOOPiOS -configuration Release -destination 'generic/platform=iOS'
+          -derivedDataPath build/dd
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          build
+      - name: Package sideload .ipa (strip watch, preserve app/widget capabilities)
+        env:
+          IPA: ${{ steps.v.outputs.ipa }}
+        run: |
+          set -euo pipefail
+          APP=$(find build/dd/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' -type d | head -1)
+          test -n "$APP" || { echo ".app (iphoneos) not found"; exit 1; }
+          rm -rf "$APP/Watch"
+          test -d "$APP/PlugIns/NOOPWidgets.appex" || {
+            echo "NOOPWidgets.appex missing from iOS build"; exit 1;
+          }
+          # Guard the one thing data safety depends on: the app must keep the official identity,
+          # or iOS would install it as a separate, empty app.
+          BID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist")
+          test "$BID" = "com.noopapp.noop" || { echo "unexpected bundle id: $BID"; exit 1; }
+          Tools/prepare-ios-sideload-app.sh "$APP"
+          rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
+          zip -qr "$IPA" Payload
+          ls -l "$IPA"
+      - name: Publish prerelease with the .ipa
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          IPA: ${{ steps.v.outputs.ipa }}
+          VER: ${{ steps.v.outputs.ver }}
+          BUILD: ${{ steps.v.outputs.build }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" "$IPA" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Custom iPhone build ${VER} (${BUILD}), run ${GITHUB_RUN_NUMBER}" \
+            --notes "Unsigned iPhone build of branch \`${GITHUB_REF_NAME}\` at ${GITHUB_SHA}. Install with AltStore over the existing NOOP; it keeps the production bundle id, so app data is kept. Back up first."
