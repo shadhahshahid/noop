@@ -49,7 +49,7 @@ struct ForkMoreItem: Identifiable {
 enum ForkMoreIndex {
     /// The fork release this build belongs to. Shown under About so the wearer can tell which build
     /// is installed: fork builds keep upstream's version number, so the number alone cannot say.
-    static let releaseName = "HIIT"
+    static let releaseName = "Data"
 
     private static var versionLine: String {
         let info = Bundle.main.infoDictionary

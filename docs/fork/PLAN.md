@@ -155,7 +155,28 @@ wordy explanatory copy on several screens.
   (strength stations raise heart rate much less than cardio ones and can be missed), whether the
   double-tap registers mid-session, and that the summary appears cleanly after ending.
 
-### Next, in this order
+### Done: release "Data"
+
+- `TrainingOverview` (`Packages/StrandAnalytics`, pure, 9 unit tests): sessions grouped into
+  calendar weeks, the newest week's load against the average of earlier weeks that had any, and a
+  day streak that an unfinished today does not break.
+- `StrandiOS/Fork/ForkDataView.swift`: the Data tab's first screen. Four headline numbers with
+  their seven-day average, a search across every metric, and doors into the existing analysis
+  screens. Trends is one of the doors.
+- `StrandiOS/Fork/ForkTrainingView.swift`: sessions by type, this week's load so far against a usual
+  week, the easy / steady / hard split of zone time, a marker per kind of session where data exists
+  (recovery between HIIT rounds, average run pace with the heart rate it cost), and the stretch
+  streak.
+- Left out on purpose: the Sleep screen was not redesigned (it already leads with one score), and
+  the Training screen shows no "pattern" line; the existing Patterns screen is linked from Data.
+
+### Next
+
+Nothing further is planned. Everything built so far is waiting to be tried on the phone with a strap;
+what each release could not prove without one is listed under it above. Fix what real use turns up
+before adding more.
+
+### Original briefs, kept for reference
 
 **1. Whole-app look pass (done, see above; the brief is kept for reference).** Bring every other screen up to the standard of Today by restyling the
 shared building blocks once, rather than screen by screen: page header (`ScreenScaffold`), section
@@ -187,7 +208,7 @@ or on my own; cardio, strength or mixed. Never split HIIT by brand of class. Yog
 quiet live screen with no targets and no buzzes: elapsed time (or time left for a timed stretch) and
 heart rate settling toward resting.
 
-**4. Sleep and Data.** Sleep in the same single-score language as Today. Data home: search, a range
+**4. Sleep and Data (done as release "Data", see above).** Sleep in the same single-score language as Today. Data home: search, a range
 control, four headline metrics, and doors into the existing analysis screens. A Training screen:
 weekly load against the usual, intensity mix by time in easy / steady / hard zones, one fitness
 marker per session type (heart-rate recovery from HIIT, pace at a fixed heart rate from zone runs,
