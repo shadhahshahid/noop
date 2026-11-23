@@ -807,9 +807,10 @@ struct WorkoutsView: View {
         let displayValue = UnitFormatter.effortValue(avgStrain, scale: effortScale)
         let fraction = max(0, min(1, displayValue / scaleMax))
         VStack(spacing: 18) {
+            // Personal fork: labels and counts are neutral; only the ring keeps Effort's colour.
             Text("TYPICAL EFFORT")
                 .font(StrandFont.overline).tracking(StrandFont.overlineTracking)
-                .foregroundStyle(StrandPalette.effortColor)
+                .foregroundStyle(StrandPalette.textSecondary)
             if hasData {
                 ZStack {
                     // Hero vessel → animated (this is one of the page's live gauges, like the Sleep Rest
@@ -865,10 +866,10 @@ struct WorkoutsView: View {
                 .foregroundStyle(StrandPalette.textPrimary)
             HStack(spacing: NoopMetrics.gap) {
                 heroCountStat(String(localized: "Sessions"), value: Double(rows.count),
-                              format: { "\(Int($0.rounded()))" }, tint: StrandPalette.effortColor)
+                              format: { "\(Int($0.rounded()))" }, tint: StrandPalette.textPrimary)
                 heroStat(String(localized: "Active"), String(localized: "\(oneDecimal(totalTimeH))h"), tint: StrandPalette.textPrimary)
                 heroStat(String(localized: "Top sport"), modal.count > 0 ? "\(modal.count)×" : "—",
-                         tint: StrandPalette.effortBright)
+                         tint: StrandPalette.textPrimary)
             }
             Text(modal.count > 0
                  ? "Mostly \(WorkoutSource.displaySport(modal.sport)) (\(effectiveRange.caption))."

@@ -516,15 +516,8 @@ struct StressView: View {
             alignment: .leading,
             spacing: NoopMetrics.gap
         ) {
-            // Today's stress value, with its band as the caption.
-            StatTile(
-                label: "Stress",
-                value: StressTrace.formatLevel(model.score),
-                caption: String(localized: "of 3 · \(model.band.title)"),
-                accent: StressRamp.color(model.score),
-                sparkline: model.sparkValues.count > 1 ? model.sparkValues : nil,
-                sparkColor: StressRamp.color(model.score)
-            )
+            // Personal fork: no Stress tile here. The hero card directly above already shows today's
+            // value and band, and one screen should not state the same number twice.
             // Resting HR — an INCREASE is the stressful direction.
             markerTile(
                 label: "Resting HR",

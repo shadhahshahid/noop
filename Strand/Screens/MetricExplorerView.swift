@@ -588,19 +588,19 @@ struct MetricExplorerView: View {
             HStack(spacing: 14) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 11, style: .continuous)
-                        .fill(StrandPalette.metricRose.opacity(0.16))
+                        .fill(StrandPalette.surfaceInset)
                     Image(systemName: "waveform.path.ecg")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(StrandPalette.metricRose)
+                        .foregroundStyle(StrandPalette.textPrimary)
                 }
                 .frame(width: 42, height: 42)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Deep Timeline")
+                    Text("Full day")
                         .font(StrandFont.body)
                         .fontWeight(.semibold)
                         .foregroundStyle(StrandPalette.textPrimary)
-                    Text("Every second of your day, zoomable.")
+                    Text("Heart rate across the whole day.")
                         .font(StrandFont.footnote)
                         .foregroundStyle(StrandPalette.textTertiary)
                 }
@@ -664,9 +664,10 @@ private struct MetricRow: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
                     .fill(StrandPalette.surfaceInset)
+                // Personal fork: neutral row icons; colour is reserved for state.
                 Image(systemName: metric.icon)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(metricAccent(metric))
+                    .foregroundStyle(StrandPalette.textPrimary)
             }
             .frame(width: 34, height: 34)
 

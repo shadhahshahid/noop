@@ -2899,10 +2899,11 @@ private struct SettingsSection<Content: View>: View {
         StrandCard(padding: NoopMetrics.space5) {
             VStack(alignment: .leading, spacing: NoopMetrics.space4) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Settings").strandOverline()
+                    // Personal fork: the card's own title is its header; no "Settings" label above
+                    // it, and a neutral icon.
                     HStack(spacing: NoopMetrics.space2 + 2) {
                         Image(systemName: icon)
-                            .foregroundStyle(StrandPalette.accent)
+                            .foregroundStyle(StrandPalette.textSecondary)
                             .accessibilityHidden(true)
                         Text(title)
                             .font(StrandFont.title2)
