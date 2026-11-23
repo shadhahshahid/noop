@@ -52,8 +52,13 @@ enum ForkMoreIndex {
     static let releaseName = "Feel"
 
     private static var versionLine: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        return version.map { "Version \($0), your own build: \(releaseName)" } ?? "Your own build: \(releaseName)"
+        let info = Bundle.main.infoDictionary
+        guard let version = info?["CFBundleShortVersionString"] as? String else {
+            return "Your own build: \(releaseName)"
+        }
+        // The build number is what tells two fork builds of the same version apart.
+        let build = (info?["CFBundleVersion"] as? String).map { " (\($0))" } ?? ""
+        return "Version \(version)\(build), your own build: \(releaseName)"
     }
 
     /// The ten rows the More tab shows at rest.

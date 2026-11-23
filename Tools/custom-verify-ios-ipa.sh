@@ -8,15 +8,16 @@
 # reads still requests HealthKit and the App Group. Nothing in the archive is executed.
 #
 # Usage:
-#   Tools/custom-verify-ios-ipa.sh path/to/NOOP.ipa [expected-bundle-id] [expected-version]
+#   Tools/custom-verify-ios-ipa.sh path/to/NOOP.ipa [expected-bundle-id] [expected-version] [expected-build]
 #
 # Exit status 0 when every check passes, 1 otherwise. Every failed check is printed.
 
 set -uo pipefail
 
-IPA="${1:?usage: $0 path/to/NOOP.ipa [expected-bundle-id] [expected-version]}"
+IPA="${1:?usage: $0 path/to/NOOP.ipa [expected-bundle-id] [expected-version] [expected-build]}"
 WANT_ID="${2:-com.noopapp.noop}"
 WANT_VERSION="${3:-}"
+WANT_BUILD="${4:-}"
 
 fails=0
 fail() { echo "FAIL: $*"; fails=$((fails + 1)); }
@@ -56,6 +57,9 @@ if [ -n "$VERSION" ] && [ -n "$BUILD" ]; then pass "version $VERSION ($BUILD)"; 
 if [ -n "$WANT_VERSION" ]; then
   if [ "$VERSION" = "$WANT_VERSION" ]; then pass "version matches $WANT_VERSION"; else fail "version is '$VERSION', expected '$WANT_VERSION'"; fi
 fi
+if [ -n "$WANT_BUILD" ]; then
+  if [ "$BUILD" = "$WANT_BUILD" ]; then pass "build number matches $WANT_BUILD"; else fail "build number is '$BUILD', expected '$WANT_BUILD'"; fi
+fi
 if [ -n "$APP_GROUP" ]; then pass "app group is $APP_GROUP"; else fail "AppGroupIdentifier is empty"; fi
 
 if [ -d "$APP/Watch" ]; then fail "Watch folder is present (the sideload build must not carry it)"; else pass "no Watch folder"; fi
@@ -63,6 +67,8 @@ if [ -d "$APP/Watch" ]; then fail "Watch folder is present (the sideload build m
 if [ -d "$WIDGET" ]; then
   WIDGET_ID=$(plist "$WIDGET/Info.plist" CFBundleIdentifier)
   WIDGET_GROUP=$(plist "$WIDGET/Info.plist" AppGroupIdentifier)
+  WIDGET_BUILD=$(plist "$WIDGET/Info.plist" CFBundleVersion)
+  if [ "$WIDGET_BUILD" = "$BUILD" ]; then pass "widget build number matches the app's"; else fail "widget build number '$WIDGET_BUILD' differs from the app's '$BUILD'"; fi
   if [ "$WIDGET_ID" = "$WANT_ID.widgets" ]; then pass "widget bundle id is $WIDGET_ID"; else fail "widget bundle id is '$WIDGET_ID', expected '$WANT_ID.widgets'"; fi
   if [ "$WIDGET_GROUP" = "$APP_GROUP" ]; then pass "widget shares the app group"; else fail "widget app group '$WIDGET_GROUP' differs from the app's '$APP_GROUP'"; fi
 else

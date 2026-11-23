@@ -6,11 +6,32 @@
 # (com.noopapp.noop), so AltStore installs it OVER an existing NOOP and iOS keeps the app's data.
 #
 # Deliberately left out, compared with fork-release.yml: the version-bump commit, the Android and
-# macOS builds, and the push to altstore-source.json. Nothing here writes to any branch.
+# macOS builds, and the push to upstream's altstore-source.json. Nothing here writes to a code branch.
+#
+# Build number: the app's CFBundleVersion is "<project build>.<run number>", for example 435.4.
+# AltStore tells builds apart by version AND build number, so each fork build needs its own; the
+# project's own number stays the first part, so a later upstream build still sorts above it.
+#
+# With `publish_to_source` ticked, the finished build also becomes the newest version in the fork's
+# own AltStore source (branch `altstore`, file source.json), which is what the phone updates from.
+# Left unticked, the build is only a release file to look at.
 name: Custom iPhone build
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_to_source:
+        description: "Also make this build the newest version in the fork's AltStore source"
+        type: boolean
+        default: false
+      label:
+        description: 'Name shown for this version in AltStore, for example "12.0.0 Feel"'
+        required: false
+        default: ''
+      notes:
+        description: "What changed, shown in AltStore"
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -37,7 +58,7 @@ jobs:
           BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION:' project.yml | sed -E 's/.*"([^"]+)".*/\1/')
           test -n "$VER" && test -n "$BUILD" || { echo "could not read version from project.yml"; exit 1; }
           echo "ver=$VER" >> "$GITHUB_OUTPUT"
-          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "build=${BUILD}.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "tag=custom-v${VER}-r${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
           echo "ipa=NOOP-ios-unsigned-v${VER}-custom-r${GITHUB_RUN_NUMBER}.ipa" >> "$GITHUB_OUTPUT"
       - name: Install XcodeGen
@@ -45,10 +66,13 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen generate
       - name: Build NOOPiOS for device (unsigned, Release)
+        env:
+          BUILD: ${{ steps.v.outputs.build }}
         run: >-
           xcodebuild -scheme NOOPiOS -configuration Release -destination 'generic/platform=iOS'
           -derivedDataPath build/dd
           CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          CURRENT_PROJECT_VERSION="$BUILD"
           build
       - name: Package sideload .ipa (strip watch, preserve app/widget capabilities)
         env:
@@ -75,7 +99,8 @@ jobs:
         env:
           IPA: ${{ steps.v.outputs.ipa }}
           VER: ${{ steps.v.outputs.ver }}
-        run: Tools/custom-verify-ios-ipa.sh "$IPA" com.noopapp.noop "$VER"
+          BUILD: ${{ steps.v.outputs.build }}
+        run: Tools/custom-verify-ios-ipa.sh "$IPA" com.noopapp.noop "$VER" "$BUILD"
       - name: Publish prerelease with the .ipa
         env:
           GH_TOKEN: ${{ github.token }}
@@ -91,3 +116,29 @@ jobs:
             --prerelease \
             --title "Custom iPhone build ${VER} (${BUILD}), run ${GITHUB_RUN_NUMBER}" \
             --notes "Unsigned iPhone build of branch \`${GITHUB_REF_NAME}\` at ${GITHUB_SHA}. Install with AltStore over the existing NOOP; it keeps the production bundle id, so app data is kept. Back up first."
+      - name: Publish this build to the fork's AltStore source
+        if: ${{ inputs.publish_to_source }}
+        # Runs only after the release exists, since the source points at the release file. The source
+        # is rebuilt from the packaged app itself and then checked the way AltStore checks it, so a
+        # listing that AltStore would refuse is never committed.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.v.outputs.tag }}
+          IPA: ${{ steps.v.outputs.ipa }}
+          LABEL: ${{ inputs.label }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          FILE="repos/${GITHUB_REPOSITORY}/contents/source.json"
+          gh api "${FILE}?ref=altstore" -H "Accept: application/vnd.github.raw" > previous-source.json
+          SHA=$(gh api "${FILE}?ref=altstore" --jq .sha)
+          test -n "$SHA" || { echo "could not read source.json on branch altstore"; exit 1; }
+          Tools/custom-altstore-source.py build "$IPA" \
+            --download-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/${IPA}" \
+            --previous previous-source.json --out source.json \
+            --label "$LABEL" --notes "$NOTES"
+          Tools/custom-altstore-source.py check source.json "$IPA"
+          gh api -X PUT "$FILE" -f branch=altstore -f sha="$SHA" \
+            -f message="source: ${TAG}" \
+            -f content="$(base64 < source.json | tr -d '\n')" --jq '.commit.sha'
+
