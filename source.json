@@ -21,6 +21,17 @@
       "versions": [
         {
           "version": "12.0.0",
+          "buildVersion": "435.6",
+          "date": "2026-11-23",
+          "localizedDescription": "Release Runs: new Train tab, run modes (Zone, Pace, Intervals, Free) and a heart-rate and pace coach that buzzes the strap. Includes release Look.",
+          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r6/NOOP-ios-unsigned-v12.0.0-custom-r6.ipa",
+          "size": 22089507,
+          "sha256": "8a71ecada185dbf8fa042a7a39240f0eb495a4aba4af8ef07f7980f2ea92207f",
+          "minOSVersion": "17.0",
+          "marketingVersion": "12.0.0 Runs"
+        },
+        {
+          "version": "12.0.0",
           "buildVersion": "435.5",
           "date": "2026-11-23",
           "localizedDescription": "Release Look: every screen tidied to match Today. Plain titles, one header per section, neutral numbers, no outlines, Workouts filters folded away.",
@@ -70,11 +81,11 @@
         }
       },
       "version": "12.0.0",
-      "buildVersion": "435.5",
+      "buildVersion": "435.6",
       "versionDate": "2026-11-23",
-      "versionDescription": "Release Look: every screen tidied to match Today. Plain titles, one header per section, neutral numbers, no outlines, Workouts filters folded away.",
-      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r5/NOOP-ios-unsigned-v12.0.0-custom-r5.ipa",
-      "size": 21971318,
+      "versionDescription": "Release Runs: new Train tab, run modes (Zone, Pace, Intervals, Free) and a heart-rate and pace coach that buzzes the strap. Includes release Look.",
+      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r6/NOOP-ios-unsigned-v12.0.0-custom-r6.ipa",
+      "size": 22089507,
       "minOSVersion": "17.0"
     }
   ],
