@@ -21,6 +21,17 @@
       "versions": [
         {
           "version": "12.0.0",
+          "buildVersion": "435.7",
+          "date": "2026-11-23",
+          "localizedDescription": "Release HIIT: no-setup HIIT with rounds from heart rate, double-tap station marks, a session summary with tags, and a quiet Yoga and Stretch card. Includes releases Look and Runs.",
+          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r7/NOOP-ios-unsigned-v12.0.0-custom-r7.ipa",
+          "size": 22150738,
+          "sha256": "d954b1de961f758d038ba342dcbd028e97201d232d84e9aa15c287ef2e6e6697",
+          "minOSVersion": "17.0",
+          "marketingVersion": "12.0.0 HIIT"
+        },
+        {
+          "version": "12.0.0",
           "buildVersion": "435.6",
           "date": "2026-11-23",
           "localizedDescription": "Release Runs: new Train tab, run modes (Zone, Pace, Intervals, Free) and a heart-rate and pace coach that buzzes the strap. Includes release Look.",
@@ -81,11 +92,11 @@
         }
       },
       "version": "12.0.0",
-      "buildVersion": "435.6",
+      "buildVersion": "435.7",
       "versionDate": "2026-11-23",
-      "versionDescription": "Release Runs: new Train tab, run modes (Zone, Pace, Intervals, Free) and a heart-rate and pace coach that buzzes the strap. Includes release Look.",
-      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r6/NOOP-ios-unsigned-v12.0.0-custom-r6.ipa",
-      "size": 22089507,
+      "versionDescription": "Release HIIT: no-setup HIIT with rounds from heart rate, double-tap station marks, a session summary with tags, and a quiet Yoga and Stretch card. Includes releases Look and Runs.",
+      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r7/NOOP-ios-unsigned-v12.0.0-custom-r7.ipa",
+      "size": 22150738,
       "minOSVersion": "17.0"
     }
   ],
