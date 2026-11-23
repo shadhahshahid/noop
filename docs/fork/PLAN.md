@@ -112,9 +112,19 @@ target band, four one-tap starts: HIIT, Run, Yoga, Stretch); five tabs; More as 
 Settings split into eight groups; plain canvas behind the Sleep score. The owner's verdict after a
 week of use: **Today looks good; the rest of the app looks basic and is awkward to use.**
 
+### Done: release "Look"
+
+A first pass over every other screen, mostly through the shared building blocks: page headers are the
+title alone, each section has one header, metric tiles show neutral values with a trend chip that
+wraps instead of truncating, pills and cards have no outlines, Settings cards have plain headers.
+Screen fixes: plain titles (Live, Health, Data, Full day), the Workouts filters fold behind one
+button, neutral labels and icons on Workouts and Explore, no repeated value on Stress. Still weak and
+left for the redesigns below: large empty states on Live and Health when no strap is connected, and
+wordy explanatory copy on several screens.
+
 ### Next, in this order
 
-**1. Whole-app look pass.** Bring every other screen up to the standard of Today by restyling the
+**1. Whole-app look pass (done, see above; the brief is kept for reference).** Bring every other screen up to the standard of Today by restyling the
 shared building blocks once, rather than screen by screen: page header (`ScreenScaffold`), section
 labels, cards and nested tiles, segmented controls and filter rows, list rows, search fields, pills
 and badges, chart frames and axes, pop-up sheets, empty states. Aim for fewer boxes inside boxes,
