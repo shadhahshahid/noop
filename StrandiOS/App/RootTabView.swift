@@ -142,7 +142,7 @@ struct RootTabView: View {
             // and Data opens Trends; Coach is no longer a tab (it sits under More while its master
             // switch is on). Tags stay 0…4 so `tabPaths` / `scrollTop` keep their indices.
             tab(todayTabRoot, "Today", "house", path: $tabPaths[0], scrollSignal: scrollTop[0]).tag(0)
-            tab(WorkoutsView(), "Train", "figure.run", path: $tabPaths[1], scrollSignal: scrollTop[1]).tag(1)
+            tab(ForkTrainView(), "Train", "figure.run", path: $tabPaths[1], scrollSignal: scrollTop[1]).tag(1)
             tab(SleepView(), "Sleep", "moon", path: $tabPaths[2], scrollSignal: scrollTop[2]).tag(2)
             tab(TrendsView(), "Data", "chart.bar", path: $tabPaths[3], scrollSignal: scrollTop[3]).tag(3)
             moreTab(path: $tabPaths[4], scrollSignal: scrollTop[4]).tag(4)

@@ -47,6 +47,9 @@ struct LiveWorkoutView: View {
             VStack(alignment: .leading, spacing: NoopMetrics.sectionSpacing) {
                 let cards: [AnyView] = [
                     AnyView(header),
+                    // Personal fork: the run coach's card, when this session has a target. Draws nothing
+                    // otherwise, and observes only the coach, so a reading redraws just this card.
+                    AnyView(ForkRunCoachPanel()),
                     AnyView(timeBlock),
                     AnyView(heartRateBlock),
                     AnyView(effortGauge),

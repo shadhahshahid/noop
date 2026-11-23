@@ -286,6 +286,9 @@ struct ForkQuickStarts: View {
     @EnvironmentObject var model: AppModel
     @State private var showLiveWorkout = false
     @State private var showPicker = false
+    @State private var showRunSetup = false
+
+    private static let runSport = "Running"
 
     private struct Start: Identifiable {
         let title: LocalizedStringKey
@@ -326,8 +329,14 @@ struct ForkQuickStarts: View {
                     ForEach(Self.starts) { start in
                         Button {
                             StrandHaptic.commit.play()
-                            model.startWorkout(sport: start.sport)
-                            showLiveWorkout = true
+                            // A run first asks what it is for (zone, pace, intervals or free); the
+                            // other sessions have nothing to set up and start at once.
+                            if start.sport == Self.runSport {
+                                showRunSetup = true
+                            } else {
+                                model.startWorkout(sport: start.sport)
+                                showLiveWorkout = true
+                            }
                         } label: {
                             VStack(spacing: NoopMetrics.space2) {
                                 Image(systemName: start.symbol)
@@ -353,6 +362,19 @@ struct ForkQuickStarts: View {
         .sheet(isPresented: $showLiveWorkout) {
             LiveWorkoutView(onClose: { showLiveWorkout = false })
                 .environmentObject(model.live)
+        }
+        .sheet(isPresented: $showRunSetup) {
+            ForkRunSetupSheet { plan in
+                showRunSetup = false
+                model.startWorkout(sport: Self.runSport)
+                ForkRunCoach.shared.begin(plan)
+                Task {
+                    // Let the setup sheet finish closing before the live screen is presented.
+                    try? await Task.sleep(nanoseconds: 450_000_000)
+                    showLiveWorkout = true
+                }
+            }
+            .environmentObject(model)
         }
         .workoutSelectionCover(isPresented: $showPicker) {
             StartWorkoutSheet { name in

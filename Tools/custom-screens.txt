@@ -1,4 +1,3 @@
 # Screens the screenshot workflow captures on this branch (see docs/fork/PLAN.md).
-shell tab1 tab2 tab3 tab4
-live health stress insights explore compare devices
-forkmore forkprofile forkscores
+shell tab1
+forkrunsetup forkrunin forkrunbelow forkrunabove forkrunrest

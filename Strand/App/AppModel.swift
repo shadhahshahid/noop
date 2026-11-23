@@ -1893,6 +1893,9 @@ final class AppModel: ObservableObject {
 
     /// HR-zone haptic coaching: buzz when crossing into the top zone (ease off) or back to recovery.
     private func coachZone(_ hr: Int?) {
+        // Personal fork: while the run coach is holding a target it owns the strap's buzzes, so this
+        // older top-zone cue stands down rather than buzzing over it.
+        guard !ForkRunCoach.shared.isCoaching else { return }
         guard behavior.zoneCoaching, live.bonded, live.worn, let hr, hr >= 30 else { return }
         guard profile.hrMax > 0 else { return }
         // #531: route the haptic coach through the profile's effective zone set (personalized when set,

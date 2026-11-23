@@ -219,6 +219,9 @@ struct StrandiOSApp: App {
     var body: some Scene {
         WindowGroup {
             iOSRootView()
+                // Personal fork: wire the run coach to the app model once. It does nothing until a
+                // run is started with a target.
+                .task { ForkRunCoach.shared.attach(to: model) }
                 .environmentObject(model)
                 .environmentObject(model.ble)   // #334: Today pull-to-sync reads BLEManager (no HR churn)
                 .environmentObject(model.live)
@@ -575,6 +578,12 @@ enum DemoScreens {
         switch args[i + 1].lowercased() {
         // Personal fork: the redesigned More menu, one of its lists and two Settings groups.
         case "forkmore": return AnyView(ScreenScaffold(title: "More") { ForkMoreMenu(coachEnabled: false) })
+        // Personal fork: the run setup sheet, and the live coach card in each of its states.
+        case "forkrunsetup": return AnyView(ForkRunSetupSheet(onStart: { _ in }))
+        case "forkrunin": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.inZone))
+        case "forkrunbelow": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.below))
+        case "forkrunabove": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.above))
+        case "forkrunrest": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.resting))
         case "forkstrap": return AnyView(ForkMoreGroupPage(group: .strap))
         case "forkprofile": return AnyView(SettingsView(group: .profile))
         case "forkscores": return AnyView(SettingsView(group: .scores))
