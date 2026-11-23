@@ -21,6 +21,17 @@
       "versions": [
         {
           "version": "12.0.0",
+          "buildVersion": "435.8",
+          "date": "2026-11-23",
+          "localizedDescription": "Release Data: a Data home with search and headline numbers, and a Training screen (weekly load, intensity mix, markers, stretch streak). Includes releases Look, Runs and HIIT.",
+          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r8/NOOP-ios-unsigned-v12.0.0-custom-r8.ipa",
+          "size": 22255268,
+          "sha256": "65ad434976baa24b4ab17935bcae0a7df94ef026ab68ecd3fb93ad6a14452c92",
+          "minOSVersion": "17.0",
+          "marketingVersion": "12.0.0 Data"
+        },
+        {
+          "version": "12.0.0",
           "buildVersion": "435.7",
           "date": "2026-11-23",
           "localizedDescription": "Release HIIT: no-setup HIIT with rounds from heart rate, double-tap station marks, a session summary with tags, and a quiet Yoga and Stretch card. Includes releases Look and Runs.",
@@ -62,17 +73,6 @@
           "sha256": "28c7470ca1a4ae611181d2da85481047468f591396f05c9800a4d142a34bdf81",
           "minOSVersion": "17.0",
           "marketingVersion": "12.0.0 Feel"
-        },
-        {
-          "version": "12.0.0",
-          "buildVersion": "435",
-          "date": "2026-11-14",
-          "localizedDescription": "Release Feel: new Today, five tabs, More menu with search, near-black look.",
-          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r3/NOOP-ios-unsigned-v12.0.0-custom-r3.ipa",
-          "size": 21968673,
-          "sha256": "561333ba3083a2ebedc06bdecf8d9770e22e85c533ec45309fbac888fd1ba224",
-          "minOSVersion": "17.0",
-          "marketingVersion": "12.0.0 Feel"
         }
       ],
       "appPermissions": {
@@ -92,11 +92,11 @@
         }
       },
       "version": "12.0.0",
-      "buildVersion": "435.7",
+      "buildVersion": "435.8",
       "versionDate": "2026-11-23",
-      "versionDescription": "Release HIIT: no-setup HIIT with rounds from heart rate, double-tap station marks, a session summary with tags, and a quiet Yoga and Stretch card. Includes releases Look and Runs.",
-      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r7/NOOP-ios-unsigned-v12.0.0-custom-r7.ipa",
-      "size": 22150738,
+      "versionDescription": "Release Data: a Data home with search and headline numbers, and a Training screen (weekly load, intensity mix, markers, stretch streak). Includes releases Look, Runs and HIIT.",
+      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r8/NOOP-ios-unsigned-v12.0.0-custom-r8.ipa",
+      "size": 22255268,
       "minOSVersion": "17.0"
     }
   ],
