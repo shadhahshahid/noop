@@ -94,7 +94,7 @@ struct ForkSessionSummaryView: View {
     }
 
     private var tiles: [(label: String, value: String)] {
-        var out: [(String, String)] = [
+        var out: [(label: String, value: String)] = [
             (String(localized: "Time"), ForkRunMath.clockText(summary.seconds)),
             (String(localized: "Rounds"), "\(summary.rounds)"),
         ]
