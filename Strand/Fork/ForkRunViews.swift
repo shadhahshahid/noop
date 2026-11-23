@@ -91,7 +91,13 @@ struct ForkRunSetupSheet: View {
     let onStart: (ForkRunPlan) -> Void
 
     @EnvironmentObject private var model: AppModel
-    @State private var plan = ForkRunPlan.loadLast()
+    @State private var plan: ForkRunPlan
+
+    /// `initialPlan` is for previews and screenshots; the app opens on the plan used last time.
+    init(initialPlan: ForkRunPlan? = nil, onStart: @escaping (ForkRunPlan) -> Void) {
+        self.onStart = onStart
+        _plan = State(initialValue: initialPlan ?? ForkRunPlan.loadLast())
+    }
 
     private var zoneRangeText: String {
         guard let zone = model.profile.hrZoneSet.zones.first(where: { $0.number == plan.zone }) else { return "" }

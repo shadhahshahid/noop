@@ -579,7 +579,9 @@ enum DemoScreens {
         // Personal fork: the redesigned More menu, one of its lists and two Settings groups.
         case "forkmore": return AnyView(ScreenScaffold(title: "More") { ForkMoreMenu(coachEnabled: false) })
         // Personal fork: the run setup sheet, and the live coach card in each of its states.
-        case "forkrunsetup": return AnyView(ForkRunSetupSheet(onStart: { _ in }))
+        case "forkrunsetup": return AnyView(ForkRunSetupSheet(initialPlan: ForkRunPlan(mode: .zone), onStart: { _ in }))
+        case "forkrunsetuppace": return AnyView(ForkRunSetupSheet(initialPlan: ForkRunPlan(mode: .pace), onStart: { _ in }))
+        case "forkrunsetupreps": return AnyView(ForkRunSetupSheet(initialPlan: ForkRunPlan(mode: .intervals), onStart: { _ in }))
         case "forkrunin": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.inZone))
         case "forkrunbelow": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.below))
         case "forkrunabove": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.above))
