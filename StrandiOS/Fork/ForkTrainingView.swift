@@ -84,16 +84,20 @@ struct ForkTrainingModel {
         let sessions = rows.map { TrainingOverview.Session(start: start($0), load: $0.strain, seconds: seconds($0)) }
         weeks = TrainingOverview.weeks(sessions, now: now, count: 6, calendar: calendar)
         loadText = UnitFormatter.effortDisplay(weeks.last?.load ?? 0, scale: effortScale)
-        if let change = TrainingOverview.changeVersusUsual(weeks) {
+        if (weeks.last?.sessions ?? 0) == 0 {
+            // A week with nothing in it yet is not "100% below": it has simply not started.
+            changeText = String(localized: "No sessions yet this week")
+            changeIsHigh = false
+        } else if let change = TrainingOverview.changeVersusUsual(weeks) {
             let percent = Int((abs(change) * 100).rounded())
             if percent < 5 {
-                changeText = String(localized: "About your usual")
+                changeText = String(localized: "About a usual week")
                 changeIsHigh = false
             } else if change > 0 {
-                changeText = String(localized: "\(percent)% above your usual")
+                changeText = String(localized: "\(percent)% above a usual week")
                 changeIsHigh = change >= 0.3
             } else {
-                changeText = String(localized: "\(percent)% below your usual")
+                changeText = String(localized: "\(percent)% below a usual week, so far")
                 changeIsHigh = false
             }
         } else {
@@ -182,7 +186,7 @@ struct ForkTrainingContent: View {
         let peak = max(model.weeks.map(\.load).max() ?? 0, 1)
         return HStack(alignment: .bottom, spacing: NoopMetrics.space4) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Load this week")
+                Text("Load this week so far")
                     .font(StrandFont.caption)
                     .foregroundStyle(StrandPalette.textSecondary)
                 Text(verbatim: model.loadText)
@@ -198,7 +202,7 @@ struct ForkTrainingContent: View {
             HStack(alignment: .bottom, spacing: 8) {
                 ForEach(Array(model.weeks.enumerated()), id: \.offset) { index, week in
                     RoundedRectangle(cornerRadius: 5, style: .continuous)
-                        .fill(index == model.weeks.count - 1 ? StrandPalette.textPrimary : StrandPalette.hairlineStrong)
+                        .fill(index == model.weeks.count - 1 ? StrandPalette.textPrimary : StrandPalette.textTertiary.opacity(0.4))
                         .frame(width: 14, height: max(4, 64 * week.load / peak))
                 }
             }
@@ -294,7 +298,8 @@ struct ForkTrainingContent: View {
                 Text("Morning stretch")
                     .font(StrandFont.caption)
                     .foregroundStyle(StrandPalette.textSecondary)
-                Text(model.stretch.current == 1 ? "1-day streak" : "\(model.stretch.current)-day streak")
+                Text(model.stretch.current == 0 ? "No streak yet"
+                     : (model.stretch.current == 1 ? "1-day streak" : "\(model.stretch.current)-day streak"))
                     .font(StrandFont.rounded(22, weight: .semibold))
                     .foregroundStyle(StrandPalette.textPrimary)
                 Text("\(model.stretch.daysDone) of the last \(model.stretch.days.count) days")
@@ -305,7 +310,7 @@ struct ForkTrainingContent: View {
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(12), spacing: 6), count: 7), spacing: 6) {
                 ForEach(Array(model.stretch.days.enumerated()), id: \.offset) { _, done in
                     Circle()
-                        .fill(done ? StrandPalette.textPrimary : StrandPalette.hairlineStrong)
+                        .fill(done ? StrandPalette.textPrimary : StrandPalette.textTertiary.opacity(0.3))
                         .frame(width: 12, height: 12)
                 }
             }
