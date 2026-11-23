@@ -1,0 +1,60 @@
+{
+  "name": "NOOP (personal fork)",
+  "identifier": "io.github.shadhahshahid.noop.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/shadhahshahid/noop/altstore/source.json",
+  "subtitle": "One person's redesigned build of NOOP. Not the official source.",
+  "description": "Builds of a personal fork of NOOP, the independent open-source WHOOP companion (https://github.com/ryanbr/noop). Compiled by GitHub Actions from https://github.com/shadhahshahid/noop. Unofficial and unsupported; the official source is the one to use unless this fork is yours.",
+  "iconURL": "https://github.com/ryanbr/noop/raw/main/Strand/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png",
+  "website": "https://github.com/shadhahshahid/noop",
+  "tintColor": "3DDC97",
+  "apps": [
+    {
+      "name": "NOOP",
+      "bundleIdentifier": "com.noopapp.noop",
+      "developerName": "Personal fork of NoopApp",
+      "subtitle": "Read your own WHOOP strap, fully offline.",
+      "localizedDescription": "A personal fork of NOOP with a redesigned interface. It reads a WHOOP strap you own directly over Bluetooth, with no account and no cloud; everything stays on your iPhone. Not affiliated with WHOOP or with the NOOP project.",
+      "iconURL": "https://github.com/ryanbr/noop/raw/main/Strand/Resources/Assets.xcassets/AppIcon.appiconset/icon_512x512.png",
+      "tintColor": "3DDC97",
+      "category": "healthcare-fitness",
+      "screenshotURLs": [],
+      "versions": [
+        {
+          "version": "12.0.0",
+          "buildVersion": "435",
+          "date": "2026-11-14",
+          "localizedDescription": "Release Feel: new Today, five tabs, More menu with search, near-black look.",
+          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r3/NOOP-ios-unsigned-v12.0.0-custom-r3.ipa",
+          "size": 21968673,
+          "sha256": "561333ba3083a2ebedc06bdecf8d9770e22e85c533ec45309fbac888fd1ba224",
+          "minOSVersion": "17.0",
+          "marketingVersion": "12.0.0 Feel"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "com.apple.developer.healthkit",
+          "com.apple.developer.healthkit.access",
+          "com.apple.security.application-groups"
+        ],
+        "privacy": {
+          "NSBluetoothAlwaysUsageDescription": "NOOP connects directly to your WHOOP strap over Bluetooth to read heart rate, R-R intervals, battery, and sensor data locally on your iPhone. Nothing leaves your device.",
+          "NSHealthShareUsageDescription": "NOOP reads your own Apple Health data on-device to compute recovery, strain, and sleep. Nothing leaves your device.",
+          "NSHealthUpdateUsageDescription": "NOOP writes the metrics it computes from your strap back into Apple Health, on-device and only when you allow it.",
+          "NSLocationWhenInUseUsageDescription": "NOOP records your route during an outdoor workout to show distance, pace, and a map, and keeps recording while the screen is off. The route stays on your device. Nothing leaves it.",
+          "NSMicrophoneUsageDescription": "NOOP uses the microphone to let you ask the coach a question by voice. The audio is transcribed on-device and never leaves your iPhone.",
+          "NSMotionUsageDescription": "NOOP reads your iPhone's step count for a walking or running workout to show steps in the activity summary. It stays on your device. Nothing leaves it.",
+          "NSSpeechRecognitionUsageDescription": "NOOP transcribes your question on-device so you can ask the coach out loud instead of typing. Audio never leaves your iPhone."
+        }
+      },
+      "version": "12.0.0",
+      "buildVersion": "435",
+      "versionDate": "2026-11-14",
+      "versionDescription": "Release Feel: new Today, five tabs, More menu with search, near-black look.",
+      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r3/NOOP-ios-unsigned-v12.0.0-custom-r3.ipa",
+      "size": 21968673,
+      "minOSVersion": "17.0"
+    }
+  ],
+  "news": []
+}
