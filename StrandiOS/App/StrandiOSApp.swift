@@ -594,6 +594,8 @@ enum DemoScreens {
         case "forkhiitrest": return AnyView(ForkSessionCardDemo(display: ForkSessionSamples.recovering))
         case "forkcalm": return AnyView(ForkSessionCardDemo(display: ForkSessionSamples.calm))
         case "forksummary": return AnyView(ForkSessionSummaryView(summary: ForkSessionSamples.summary, onDone: {}))
+        // Personal fork: the Training screen, from the demo data's own sessions.
+        case "forktraining": return AnyView(ForkTrainingView())
         case "forkstrap": return AnyView(ForkMoreGroupPage(group: .strap))
         case "forkprofile": return AnyView(SettingsView(group: .profile))
         case "forkscores": return AnyView(SettingsView(group: .scores))

@@ -144,7 +144,7 @@ struct RootTabView: View {
             tab(todayTabRoot, "Today", "house", path: $tabPaths[0], scrollSignal: scrollTop[0]).tag(0)
             tab(ForkTrainView(), "Train", "figure.run", path: $tabPaths[1], scrollSignal: scrollTop[1]).tag(1)
             tab(SleepView(), "Sleep", "moon", path: $tabPaths[2], scrollSignal: scrollTop[2]).tag(2)
-            tab(TrendsView(), "Data", "chart.bar", path: $tabPaths[3], scrollSignal: scrollTop[3]).tag(3)
+            tab(ForkDataView(), "Data", "chart.bar", path: $tabPaths[3], scrollSignal: scrollTop[3]).tag(3)
             moreTab(path: $tabPaths[4], scrollSignal: scrollTop[4]).tag(4)
         }
         .tint(StrandPalette.accent)

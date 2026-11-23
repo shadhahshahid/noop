@@ -1,3 +1,4 @@
 # Screens the screenshot workflow captures on this branch (see docs/fork/PLAN.md).
-shell tab1
-forkhiitwork forkhiitrest forkcalm forksummary
+shell tab1 tab3
+forktraining trends
+tab3-light forktraining-light
