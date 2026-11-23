@@ -56,10 +56,7 @@ public struct StatePill: View {
             Capsule(style: .continuous)
                 .fill(tone.color.opacity(0.12))
         )
-        .overlay(
-            Capsule(style: .continuous)
-                .stroke(tone.color.opacity(0.28), lineWidth: 1)
-        )
+        // Personal fork: no outline; the tinted fill is enough to read as a pill.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
     }

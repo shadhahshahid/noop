@@ -208,7 +208,9 @@ struct WorkoutsView: View {
                 let zonesSummary = WorkoutZones.summary(from: windowRows)
 
                 workoutActionRow
-                scopeBar
+                // Personal fork: Current / Archived and the sport, source and search filters fold away
+                // behind one filter button beside the range (see `rangeBar`), instead of three rows of
+                // controls above the first number.
                 rangeBar(rows: windowRows, effectiveRange: resolved)
                 if let postLogNote { postLogBanner(postLogNote) }
                 effortHero(rows: windowRows, effectiveRange: resolved, groups: groups)
@@ -483,6 +485,9 @@ struct WorkoutsView: View {
     /// Always shown, including when everything still fits in Current. A segment that appeared only once a
     /// wearer crossed ten sessions would shift the whole screen down the first time it did, and an empty
     /// Archived tab answers "where did my older workouts go" plainly: nothing is hidden yet.
+    /// Personal fork: whether the folded-away filter controls are open.
+    @State private var showFilters = false
+
     private var scopeBar: some View {
         Picker("Scope", selection: $scope) {
             ForEach(Scope.allCases) { s in Text(s.label).tag(s) }
@@ -494,14 +499,34 @@ struct WorkoutsView: View {
     private func rangeBar(rows: [WorkoutRow], effectiveRange: Range) -> some View {
         let fellBack = effectiveRange != range
         let caption = rangeCaption(rows: rows, effectiveRange: effectiveRange, fellBack: fellBack)
+        // Personal fork: the filters show only when asked for, or while one of them is narrowing the
+        // list, so a filter can never be in force without being visible.
+        let filtersInUse = filter.isActive || scope != .current
         return VStack(alignment: .leading, spacing: 8) {
-            SegmentedPillControl(
-                Range.allCases,
-                selection: $range,
-                fillsAvailableWidth: true
-            ) { $0.label }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            filterBar
+            HStack(spacing: 8) {
+                SegmentedPillControl(
+                    Range.allCases,
+                    selection: $range,
+                    fillsAvailableWidth: true
+                ) { $0.label }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) { showFilters.toggle() }
+                } label: {
+                    Image(systemName: filtersInUse ? "line.3.horizontal.decrease.circle.fill"
+                                                   : "line.3.horizontal.decrease.circle")
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundStyle(filtersInUse ? StrandPalette.accent : StrandPalette.textSecondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Filters"))
+            }
+            if showFilters || filtersInUse {
+                scopeBar
+                filterBar
+            }
             Text(caption)
                 .font(StrandFont.footnote)
                 .foregroundStyle(fellBack ? StrandPalette.statusWarning : StrandPalette.textTertiary)

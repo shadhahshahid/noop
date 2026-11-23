@@ -24,7 +24,7 @@ struct HealthView: View {
     // MARK: - Body
 
     var body: some View {
-        ScreenScaffold(title: "Health Monitor",
+        ScreenScaffold(title: "Health",
                        subtitle: "Live vitals, streamed from the strap.",
                        // PERF (scroll): lazy column — byte-identical layout (LazyVStack == eager VStack
                        // alignment/spacing/header); builds the trailing vitals/skin-temp/age sections on
@@ -1650,7 +1650,7 @@ private struct HealthHubLinksSection: View {
 /// what ships. Reads the same injected `repo`/`profile` environment objects as the live app.
 struct FitnessAgeDemoScreen: View {
     var body: some View {
-        ScreenScaffold(title: "Health Monitor", subtitle: "Fitness Age", onRefresh: {}) {
+        ScreenScaffold(title: "Health", subtitle: "Fitness Age", onRefresh: {}) {
             FitnessAgeSection()
         }
     }
@@ -1659,7 +1659,7 @@ struct FitnessAgeDemoScreen: View {
 /// Deterministic render target for `--demo-screen vitality` (pair with `--demo-seed`).
 struct VitalityDemoScreen: View {
     var body: some View {
-        ScreenScaffold(title: "Health Monitor", subtitle: "Vitality", onRefresh: {}) {
+        ScreenScaffold(title: "Health", subtitle: "Vitality", onRefresh: {}) {
             VitalitySection()
         }
     }

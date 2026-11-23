@@ -290,7 +290,7 @@ struct TrendsView: View {
     }
 
     private var scaffold: some View {
-        ScreenScaffold(title: "Trends", subtitle: "The thread of you over time.",
+        ScreenScaffold(title: "Data", subtitle: "The thread of you over time.",
                        // PERF (scroll): lazy column — byte-identical layout (LazyVStack == eager VStack
                        // alignment/spacing/header). The content is one inner eager VStack, so the staggered
                        // section reveal is unchanged; this only defers building that stack until it scrolls in.

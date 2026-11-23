@@ -108,7 +108,7 @@ struct LiveView: View {
     @State private var showHRVSnapshot = false
 
     var body: some View {
-        ScreenScaffold(title: "Live Body Console",
+        ScreenScaffold(title: "Live",
                        subtitle: "Current physiology, strap trust, and session controls in one working view.",
                        topBackground: liquidScaffoldSky()) {
             VStack(alignment: .leading, spacing: NoopMetrics.sectionGap) {
@@ -612,8 +612,7 @@ struct LiveView: View {
                 scanButton
             }
         }
-        .overlay(RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .strokeBorder(StrandPalette.accent.opacity(0.30), lineWidth: 1))
+        // Personal fork: no outline on cards.
     }
 
     // MARK: - Manage devices link

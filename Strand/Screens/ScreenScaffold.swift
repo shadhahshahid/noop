@@ -122,9 +122,8 @@ struct ScreenScaffold<Content: View, Trailing: View>: View {
                     // identically (2026-07-02 cohesion pass).
                     Text(title).font(StrandFont.rounded(28)).foregroundStyle(StrandPalette.textPrimary)
                 }
-                if let subtitle {
-                    Text(subtitle).font(StrandFont.subhead).foregroundStyle(StrandPalette.textSecondary)
-                }
+                // Personal fork: page headers are the title alone. The one-line descriptions under
+                // each title are not drawn; `subtitle` stays in the API so no call site changes.
             }
             Spacer(minLength: 0)
             trailing()

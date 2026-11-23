@@ -179,10 +179,9 @@ public struct SectionHeader: View {
     }
     public var body: some View {
         HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                if let overline { Text(overline).strandOverline() }
-                Text(title).font(StrandFont.title2).foregroundStyle(StrandPalette.textPrimary)
-            }
+            // Personal fork: one header per section. The small capitals label that used to sit above
+            // every title is not drawn; `overline` stays in the API so no call site changes.
+            Text(title).font(StrandFont.title2).foregroundStyle(StrandPalette.textPrimary)
             Spacer()
             if let trailing {
                 Text(trailing).font(StrandFont.footnote).foregroundStyle(StrandPalette.textSecondary)
@@ -216,10 +215,16 @@ public struct StatTile<Accessory: View>: View {
         self.accessory = accessory
     }
 
+    private var valueText: some View {
+        Text(value).font(StrandFont.number(26)).foregroundStyle(StrandPalette.textPrimary)
+            .lineLimit(1).minimumScaleFactor(0.6)
+    }
+
     public var body: some View {
-        // The tile borrows its accent as a faint card wash, so each metric tile reads as
-        // part of its colour world while staying legible on the deep blue-black.
-        NoopCard(padding: 14, tint: accent) {
+        // Personal fork: colour is reserved for state, so the value is always the primary text
+        // colour, the sparkline is neutral and the card carries no accent wash. `accent` and
+        // `sparkColor` stay in the API so no call site changes.
+        NoopCard(padding: 14) {
             VStack(alignment: .leading, spacing: 0) {
                 // Header row: the metric label, and (right-aligned) the optional accessory laid out in
                 // flow so it reserves its own space rather than floating over the value below (#495).
@@ -229,17 +234,24 @@ public struct StatTile<Accessory: View>: View {
                     accessory()
                 }
                 Spacer(minLength: 4)
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(value).font(StrandFont.number(26)).foregroundStyle(accent).lineLimit(1).minimumScaleFactor(0.6)
-                    Spacer(minLength: 0)
-                    // Trend chip — the delta as a tinted pill with a direction arrow.
-                    if let delta { TrendChip(text: delta, color: deltaColor) }
+                // Personal fork: the trend chip sits beside the value when both fit, and drops below
+                // it when they do not, instead of being cut off mid-word.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        valueText
+                        Spacer(minLength: 0)
+                        if let delta { TrendChip(text: delta, color: deltaColor).fixedSize() }
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        valueText
+                        if let delta { TrendChip(text: delta, color: deltaColor) }
+                    }
                 }
                 // Sparkline isn't available on watchOS (it relies on chart-hover helpers); the watch
                 // doesn't use StatTile, but guard the reference so the file still compiles there.
                 #if !os(watchOS)
                 if let sparkline, sparkline.count > 1 {
-                    Sparkline(values: sparkline, gradient: Gradient(colors: [sparkColor.opacity(0.5), sparkColor]))
+                    Sparkline(values: sparkline, gradient: Gradient(colors: [StrandPalette.textTertiary, StrandPalette.textSecondary]))
                         .frame(height: 22).padding(.top, 4)
                         .accessibilityHidden(true)
                 }
