@@ -1,0 +1,167 @@
+# Personal fork: plan and working notes
+
+This file belongs to a personal fork of NOOP (`shadhahshahid/noop`), not to the upstream project.
+It is the shared memory for anyone, human or AI, continuing the fork's redesign. It is public, so it
+holds **no personal or health information**; keep it that way.
+
+## What this fork is
+
+One person's redesign of the iPhone app, installed on their own phone through AltStore over the
+existing NOOP, keeping all data. Upstream is `ryanbr/noop`; this fork tracks its 12.0.0 release.
+Only the iPhone app is built here. Android and macOS are out of scope: the cross-platform parity
+contract in `AGENTS.md` does not bind fork-only interface work, but stored data, analytics and
+the `.noopbak` format must stay exactly as upstream has them.
+
+## Rules that must not be broken
+
+1. **No health or personal data in this repository,** in code, tests, screenshots, commit messages
+   or this file. Screenshots use the app's own synthetic demo data only.
+2. **The app identity stays `com.noopapp.noop`** and the app group stays as upstream has it.
+   A different identity would install as a second, empty app and strand the owner's data.
+3. **Never change stored data destructively.** No edits to existing migrations, no schema changes
+   without a versioned migration and a test, nothing that rewrites or deletes history.
+4. **Strap commands:** send only commands the app already sends. Nothing firmware-related, nothing
+   destructive (see the BLE safety contract in `docs/CONTRIBUTING.md`).
+5. **No new network calls.** The app is offline by design.
+6. **Nothing reaches the phone without the owner's say-so.** Work happens on work branches. Merging
+   into `custom` and publishing to the AltStore source are the owner's decisions (see "Releasing").
+
+## Branches
+
+| Branch | What it is |
+|---|---|
+| `custom` | The released code: what the phone runs. Default branch. Do not push work in progress here |
+| `main` | Upstream's development code, untouched. Never edit |
+| `feel` | Mirror of `custom` from the first release; no longer used for work |
+| `altstore` | Holds only `source.json`, the fork's AltStore source. Written by the build workflow |
+| `ci-results/<branch>` | Written by the screenshot workflow. Latest result for one work branch |
+| anything else | A work branch. Pushing app code to it runs the screenshot workflow |
+
+## How to work without a Mac
+
+The app needs Xcode 26 and cannot be compiled on Linux, so GitHub Actions is the compiler and the
+eyes. The loop needs only `git push` and `git fetch`:
+
+1. Create a work branch from `custom` and commit changes to it.
+2. Push. `.github/workflows/custom-ios-screenshots.yml` builds the app for an iPhone simulator, fills
+   it with synthetic data and photographs the screens (about 15 minutes).
+3. Fetch the result: `git fetch origin ci-results/<branch-with-slashes-as-dashes>` and read the files
+   from `FETCH_HEAD` (for example `git show FETCH_HEAD:status.txt`, or check it out into a scratch
+   folder to open the pictures):
+   - `status.txt`: the commit, and whether the build and the capture succeeded
+   - `errors.txt`: compiler errors when the build failed
+   - `screens/*.png`: one picture per screen
+4. Look at every picture before claiming a screen is done. Compare with the design below.
+
+Choosing screens: list names in `Tools/custom-screens.txt` on the branch (one or more per line, `#`
+starts a comment). Without that file the script's default set is used. Names:
+
+- `shell` is the whole app on the Today tab; `tab1` to `tab4` open it on Train, Sleep, Data, More.
+- Any other name is passed to `--demo-screen <name>`, mapped in `DemoScreens` in
+  `StrandiOS/App/StrandiOSApp.swift`. **Add a case there for every new screen** so it can be captured.
+- Add `-light` to any name to capture it in the light theme.
+
+Things the screenshots cannot show: taps, scrolling below the first screenful, animation, Bluetooth,
+GPS, haptics, and real data. Say so when reporting; the owner tests those on the phone.
+
+Tests: upstream's `app-build.yml` (Mac build plus about 2,270 app tests) and `swift-packages.yml`
+are kept disabled in this fork and are started by hand before a release. If a change touches
+analytics, storage or anything with a test, say that the tests need running.
+
+## How to write fork code
+
+- **New front doors, same rooms.** Put new screens and components in new files under `Strand/Fork/`
+  (shared code) or `StrandiOS/Fork/` (iPhone-only), and link to the existing upstream screens.
+  Change upstream files as little as possible, and mark every such change with a comment starting
+  `// Personal fork:` so a later upstream merge can find them.
+- **Never compute a number twice.** A redesigned screen lays out values the existing screen already
+  resolves. `Strand/Fork/ForkToday.swift` is the pattern: plain values in, no scoring inside.
+- **Design tokens only:** `StrandPalette`, `StrandFont`, `NoopMetrics`, shared components. No
+  hard-coded colours, fonts or spacing in screens.
+- Everything DEBUG-only (demo screens, launch arguments) stays inside `#if DEBUG`.
+- English, neutral voice in comments and commit messages. One concern per commit.
+
+## The agreed design
+
+**Look:** near-black canvas, cards told apart by fill alone (no outlines), white primary buttons,
+colour only where it carries state. Dark theme values, set in
+`Packages/StrandDesign/Sources/StrandDesign/NoopVisualStyle.swift`:
+
+| Role | Value |
+|---|---|
+| Canvas | `#0B0D10` |
+| Card | `#14181D` |
+| Control (buttons, inputs, tracks) | `#1C2128` |
+| Lines | `#232930`, `#2A3038` |
+| Text | `#F2F4F7` primary, `#A9B1BD` secondary |
+| State | good `#3DDC97`, caution `#F5B83D`, low `#FF7A6B` |
+| Other | cool blue `#6CB6FF`, sleep violet `#A58BFF` |
+
+One green accent is kept on purpose for switches, links and the selected tab: a white accent makes
+switches unreadable.
+
+**Tabs:** Today, Train, Sleep, Data, More.
+
+**The owner's sessions:** HIIT (studio classes, partner sessions with a few stations, own workouts),
+runs (by heart-rate zone for easy runs, by pace for intervals), yoga, morning stretch.
+
+### Done: release "Feel"
+
+Base look; Today (one Charge ring, one-word verdict, sentence, drivers, Effort against the day's
+target band, four one-tap starts: HIIT, Run, Yoga, Stretch); five tabs; More as ten rows with search;
+Settings split into eight groups; plain canvas behind the Sleep score. The owner's verdict after a
+week of use: **Today looks good; the rest of the app looks basic and is awkward to use.**
+
+### Next, in this order
+
+**1. Whole-app look pass.** Bring every other screen up to the standard of Today by restyling the
+shared building blocks once, rather than screen by screen: page header (`ScreenScaffold`), section
+labels, cards and nested tiles, segmented controls and filter rows, list rows, search fields, pills
+and badges, chart frames and axes, pop-up sheets, empty states. Aim for fewer boxes inside boxes,
+clearer hierarchy (one thing per card that matters most), calmer colour, consistent spacing.
+Screens to judge it on: Train (`tab1`), Sleep (`tab2`), Data (`tab3`), `live`, `health`, `stress`,
+`insights`, `explore`, `compare`, `devices`, and the Settings groups. Rarely used screens
+(diagnostics, imports) get this pass only.
+
+**2. Runs.** A new Train tab replacing the Workouts list as the tab root (the list stays reachable):
+tiles for the session types, recent sessions, a link to Training analytics. Starting a run offers
+four modes: **Zone** (hold a heart-rate zone), **Pace** (hold a pace), **Intervals** (reps at a target
+pace with recoveries), **Free**. Live run screen: large current value against its target, a clear
+in / below / above state, time and distance. The **zone coach** buzzes the strap: below target two
+short buzzes, above target three long, back in zone one; an 8-second dwell before a state change
+counts; a reminder every 30 seconds while out of zone, silent in zone; active only while a session
+runs and is not paused. It replaces the existing limited `coachZone` logic in
+`Strand/App/AppModel.swift` and must use only the existing buzz layer
+(`Packages/WhoopProtocol/Sources/WhoopProtocol/HapticClock.swift`, `LiveSessionHaptics.swift`).
+The engine belongs in a package with unit tests that need no strap.
+
+**3. HIIT.** No setup: start and go. Rounds and rests are picked out from heart rate during the
+session; a double-tap on the strap optionally marks a new station (the app already treats the
+double-tap as a claimable event, see `AppModel.handleDoubleTap`). Live screen: working or recovering,
+current round and station, heart rate. Afterwards a session summary (rounds, stations, peak and
+average heart rate, recovery between rounds, Effort) and tags chosen after the fact: class, partner
+or on my own; cardio, strength or mixed. Never split HIIT by brand of class. Yoga and Stretch get a
+quiet live screen with no targets and no buzzes: elapsed time (or time left for a timed stretch) and
+heart rate settling toward resting.
+
+**4. Sleep and Data.** Sleep in the same single-score language as Today. Data home: search, a range
+control, four headline metrics, and doors into the existing analysis screens. A Training screen:
+weekly load against the usual, intensity mix by time in easy / steady / hard zones, one fitness
+marker per session type (heart-rate recovery from HIIT, pace at a fixed heart rate from zone runs,
+rep consistency from intervals), a morning-stretch streak, and one plainly worded pattern from the
+owner's own data with its sample size.
+
+Known risks: pace needs the phone on the run and lags a few seconds; heart rate under-reads
+strength stations; round detection and station marks are unproven on real sessions.
+
+## Releasing (the owner's part)
+
+1. Work is reviewed from screenshots, then merged into `custom`.
+2. The owner (or a session on the owner's Mac) runs the tests, then starts **Custom iPhone build**
+   from the Actions tab with **publish_to_source** ticked. That builds the app with its own build
+   number (`<project build>.<run number>`), checks it (`Tools/custom-verify-ios-ipa.sh`,
+   `Tools/custom-altstore-source.py check`) and makes it the newest version in the AltStore source.
+3. The owner updates on the phone and tries it. More → About shows the release name and build
+   number; set the name in `ForkMoreIndex.releaseName` (`StrandiOS/Fork/ForkMoreMenu.swift`).
+
+A session that cannot start workflows must stop at step 1 and say the work is ready for review.

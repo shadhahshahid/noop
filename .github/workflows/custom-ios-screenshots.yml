@@ -1,8 +1,21 @@
 # Personal fork only (not upstream): build NOOPiOS for the iOS Simulator, fill it with the app's own
-# synthetic demo data (`--demo-seed`, DEBUG only) and upload one screenshot per screen.
+# synthetic demo data (`--demo-seed`, DEBUG only) and take one screenshot per screen.
 #
-# This is the fast way to look at a change: it publishes nothing, installs nothing on a phone and
+# This is the fast way to look at a change: it publishes no app, installs nothing on a phone and
 # uses no real health data. The installable build is custom-ios-build.yml.
+#
+# It runs by hand, and also on every push to a work branch that touches app code, so that work can
+# be done from anywhere with nothing but `git push` and `git fetch`:
+#
+#   push to branch  ui/look          ->  results on branch  ci-results/ui-look
+#
+# The results branch is rewritten on every run and holds only the latest result for that branch:
+#   status.txt    commit, and whether the build and the capture succeeded
+#   errors.txt    compiler errors (and the tail of the build log) when the build failed
+#   screens/      one PNG per screen, scaled down for reading
+#
+# Which screens: the `screens` input when run by hand; otherwise the names listed in
+# Tools/custom-screens.txt on the branch, if that file exists; otherwise the script's default set.
 name: Custom iPhone screenshots
 
 on:
@@ -12,9 +25,29 @@ on:
         description: 'Space-separated screens to capture (blank = the default set). "shell" is the full tab shell.'
         required: false
         default: ''
+  push:
+    # Work branches only. `custom` is the released code, `feel` mirrors it, `main` is upstream's,
+    # `altstore` holds the AltStore source and `ci-results/**` is this workflow's own output.
+    branches-ignore:
+      - custom
+      - feel
+      - main
+      - altstore
+      - 'ci-results/**'
+    paths:
+      - 'Strand/**'
+      - 'StrandiOS/**'
+      - 'StrandiOSShared/**'
+      - 'StrandiOSWidgets/**'
+      - 'Packages/**'
+      - 'project.yml'
+      - 'Tools/custom-ios-screenshots.sh'
+      - 'Tools/custom-screens.txt'
+      - '.github/workflows/custom-ios-screenshots.yml'
 
 permissions:
-  contents: read
+  # Needed to write the results branch. Nothing else is written.
+  contents: write
 
 concurrency:
   group: custom-ios-screenshots-${{ github.ref }}
@@ -39,15 +72,18 @@ jobs:
           echo "simulator: $PICK"
           echo "udid=${PICK%% *}" >> "$GITHUB_OUTPUT"
       - name: Build NOOPiOS for the simulator (Debug, unsigned)
+        id: build
         env:
           UDID: ${{ steps.sim.outputs.udid }}
-        run: >-
-          xcodebuild -scheme NOOPiOS -configuration Debug
-          -destination "platform=iOS Simulator,id=$UDID"
-          -derivedDataPath build/dd
-          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
-          build
+        run: |
+          set -o pipefail
+          xcodebuild -scheme NOOPiOS -configuration Debug \
+            -destination "platform=iOS Simulator,id=$UDID" \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | tee "$RUNNER_TEMP/build.log"
       - name: Capture screenshots
+        id: capture
         env:
           UDID: ${{ steps.sim.outputs.udid }}
           SCREENS: ${{ inputs.screens }}
@@ -55,14 +91,69 @@ jobs:
           set -euo pipefail
           APP=$(find build/dd/Build/Products/Debug-iphonesimulator -maxdepth 1 -name '*.app' -type d | head -1)
           test -n "$APP" || { echo ".app (iphonesimulator) not found"; exit 1; }
+          if [ -z "$SCREENS" ] && [ -f Tools/custom-screens.txt ]; then
+            # One or more names per line; anything after a # is a comment.
+            SCREENS=$(sed -e 's/#.*//' Tools/custom-screens.txt | tr '\n' ' ')
+          fi
+          echo "screens: ${SCREENS:-<default set>}"
           # Word-splitting of $SCREENS is intended: it is a space-separated list of screen names.
           # shellcheck disable=SC2086
           Tools/custom-ios-screenshots.sh capture "$APP" "$UDID" screenshots $SCREENS
       - name: Upload screenshots
-        if: always()
+        if: always() && steps.capture.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ios-screenshots
           path: screenshots
           if-no-files-found: error
           retention-days: 14
+      - name: Publish the result to the results branch
+        # Runs after a failed build too: the compiler errors are the result then.
+        if: always()
+        env:
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          CAPTURE_OUTCOME: ${{ steps.capture.outcome }}
+        run: |
+          set -euo pipefail
+          SLUG=$(printf '%s' "$GITHUB_REF_NAME" | tr '/' '-' | tr -c 'A-Za-z0-9._-' '-')
+          OUT="$RUNNER_TEMP/results"
+          rm -rf "$OUT" && mkdir -p "$OUT/screens"
+          {
+            echo "branch:  $GITHUB_REF_NAME"
+            echo "commit:  $GITHUB_SHA"
+            echo "run:     $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "date:    $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "build:   ${BUILD_OUTCOME:-not run}"
+            echo "capture: ${CAPTURE_OUTCOME:-not run}"
+          } > "$OUT/status.txt"
+          if [ -f "$RUNNER_TEMP/build.log" ] && [ "$BUILD_OUTCOME" != "success" ]; then
+            {
+              echo "== compiler errors"
+              grep -E "error:" "$RUNNER_TEMP/build.log" | sed -e "s|$GITHUB_WORKSPACE/||g" | sort -u | head -150 || true
+              echo
+              echo "== last 60 lines of the build log"
+              tail -n 60 "$RUNNER_TEMP/build.log" | sed -e "s|$GITHUB_WORKSPACE/||g"
+            } > "$OUT/errors.txt"
+          fi
+          if [ -d screenshots ]; then
+            for f in screenshots/*.png; do
+              [ -f "$f" ] || continue
+              sips -Z 1000 "$f" --out "$OUT/screens/$(basename "$f")" >/dev/null
+            done
+          fi
+          cat "$OUT/status.txt"
+          ls "$OUT/screens" | tr '\n' ' '
+
+          # An orphan commit holding only this result, force-pushed: the results branch never grows
+          # a history, and nothing on it ever reaches a code branch.
+          WT="$RUNNER_TEMP/results-worktree"
+          git worktree add -q --detach "$WT"
+          cd "$WT"
+          git checkout -q --orphan results
+          git rm -rfq . >/dev/null 2>&1 || true
+          cp -R "$OUT"/. .
+          git add -A
+          git -c user.name="noop fork ci" -c user.email="noreply@users.noreply.github.com" \
+            commit -q -m "ci results for $GITHUB_REF_NAME at ${GITHUB_SHA:0:8}"
+          git push -q --force origin "HEAD:refs/heads/ci-results/$SLUG"
+          echo "published to branch ci-results/$SLUG"
