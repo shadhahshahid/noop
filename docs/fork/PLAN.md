@@ -122,6 +122,23 @@ button, neutral labels and icons on Workouts and Explore, no repeated value on S
 left for the redesigns below: large empty states on Live and Health when no strap is connected, and
 wordy explanatory copy on several screens.
 
+### Done: release "Runs"
+
+- `TargetCoachEngine` and `IntervalClock` (`Packages/StrandAnalytics`, pure, 16 unit tests): a
+  reading must hold a new position for 8 s before it counts; below the target cues "push on" (two
+  short buzzes), above cues "ease off" (three long), returning after a cued excursion cues "back on
+  target" (one short); cues repeat every 30 s while out; "push on" is held back for the first two
+  minutes; gaps break the dwell and are not counted as time.
+- `Strand/Fork/ForkRunCoach.swift`: a run's plan (Zone, Pace, Intervals or Free) and the coach
+  that watches the live session against it, buzzing through `AppModel.buzz`. The older top-zone
+  buzz (`coachZone`) stands down while it runs. The plan survives the app being closed mid-run.
+- `Strand/Fork/ForkRunViews.swift`: the run setup sheet and the coach card at the top of the
+  in-exercise screen. `StrandiOS/Fork/ForkTrainView.swift`: the Train tab (one-tap starts, recent
+  sessions, tools); the full Workouts list is under "All sessions".
+- Not proven, because it needs a strap and a real run: that the buzzes arrive and feel distinct,
+  that the coach keeps running with the phone locked in a pocket, and how usable GPS pace is.
+  Pace is shown per kilometre only.
+
 ### Next, in this order
 
 **1. Whole-app look pass (done, see above; the brief is kept for reference).** Bring every other screen up to the standard of Today by restyling the
@@ -133,7 +150,7 @@ Screens to judge it on: Train (`tab1`), Sleep (`tab2`), Data (`tab3`), `live`, `
 `insights`, `explore`, `compare`, `devices`, and the Settings groups. Rarely used screens
 (diagnostics, imports) get this pass only.
 
-**2. Runs.** A new Train tab replacing the Workouts list as the tab root (the list stays reachable):
+**2. Runs (done, see above; the brief is kept for reference).** A new Train tab replacing the Workouts list as the tab root (the list stays reachable):
 tiles for the session types, recent sessions, a link to Training analytics. Starting a run offers
 four modes: **Zone** (hold a heart-rate zone), **Pace** (hold a pace), **Intervals** (reps at a target
 pace with recoveries), **Free**. Live run screen: large current value against its target, a clear
