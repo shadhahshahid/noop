@@ -221,7 +221,10 @@ struct StrandiOSApp: App {
             iOSRootView()
                 // Personal fork: wire the run coach to the app model once. It does nothing until a
                 // run is started with a target.
-                .task { ForkRunCoach.shared.attach(to: model) }
+                .task {
+                    ForkRunCoach.shared.attach(to: model)
+                    ForkSessionTracker.shared.attach(to: model)
+                }
                 .environmentObject(model)
                 .environmentObject(model.ble)   // #334: Today pull-to-sync reads BLEManager (no HR churn)
                 .environmentObject(model.live)
@@ -586,6 +589,11 @@ enum DemoScreens {
         case "forkrunbelow": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.below))
         case "forkrunabove": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.above))
         case "forkrunrest": return AnyView(ForkRunCoachDemo(display: ForkRunCoachSamples.resting))
+        // Personal fork: the HIIT card in both states, the quiet card, and the after-session summary.
+        case "forkhiitwork": return AnyView(ForkSessionCardDemo(display: ForkSessionSamples.working))
+        case "forkhiitrest": return AnyView(ForkSessionCardDemo(display: ForkSessionSamples.recovering))
+        case "forkcalm": return AnyView(ForkSessionCardDemo(display: ForkSessionSamples.calm))
+        case "forksummary": return AnyView(ForkSessionSummaryView(summary: ForkSessionSamples.summary, onDone: {}))
         case "forkstrap": return AnyView(ForkMoreGroupPage(group: .strap))
         case "forkprofile": return AnyView(SettingsView(group: .profile))
         case "forkscores": return AnyView(SettingsView(group: .scores))

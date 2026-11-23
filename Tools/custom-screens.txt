@@ -1,4 +1,3 @@
 # Screens the screenshot workflow captures on this branch (see docs/fork/PLAN.md).
 shell tab1
-forkrunsetup forkrunsetuppace forkrunsetupreps
-forkrunin forkrunbelow forkrunabove forkrunrest
+forkhiitwork forkhiitrest forkcalm forksummary

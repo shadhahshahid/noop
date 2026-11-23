@@ -50,6 +50,9 @@ struct LiveWorkoutView: View {
                     // Personal fork: the run coach's card, when this session has a target. Draws nothing
                     // otherwise, and observes only the coach, so a reading redraws just this card.
                     AnyView(ForkRunCoachPanel()),
+                    // Personal fork: the HIIT card (rounds, stations) or the quiet Yoga and Stretch card.
+                    // Draws nothing for any other session.
+                    AnyView(ForkSessionPanel()),
                     AnyView(timeBlock),
                     AnyView(heartRateBlock),
                     AnyView(effortGauge),

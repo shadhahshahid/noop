@@ -135,7 +135,13 @@ struct ForkTrainView: View {
         }
         let seconds = row.durationS ?? Double(max(0, row.endTs - row.startTs))
         let minutes = max(1, Int((seconds / 60).rounded()))
-        return String(localized: "\(day), \(minutes) min")
+        var text = String(localized: "\(day), \(minutes) min")
+        // What the fork noted about this session, when it noted anything.
+        if let note = ForkSessionNotes.note(forStart: row.startTs) {
+            if note.rounds > 0 { text += String(localized: " · \(note.rounds) rounds") }
+            if let tags = note.tagLine { text += " · " + tags }
+        }
+        return text
     }
 
     // MARK: Tools

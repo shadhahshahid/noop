@@ -148,6 +148,9 @@ struct RootTabView: View {
             moreTab(path: $tabPaths[4], scrollSignal: scrollTop[4]).tag(4)
         }
         .tint(StrandPalette.accent)
+        // Personal fork: the after-session summary. A separate leaf that observes only its own
+        // presenter, so the shell is not redrawn by it.
+        .background(ForkSessionSummaryHost())
         // Switching Coach off while STANDING on it leaves `selectedTab` pointing at a tag no tab claims
         // any more, which renders as an empty tab rather than as an error. Send that wearer to Today, and
         // only in that case, so a flip made from anywhere else does not move them.
