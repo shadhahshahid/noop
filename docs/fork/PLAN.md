@@ -139,6 +139,22 @@ wordy explanatory copy on several screens.
   that the coach keeps running with the phone locked in a pocket, and how usable GPS pace is.
   Pace is shown per kilometre only.
 
+### Done: release "HIIT"
+
+- `EffortWaveEngine` (`Packages/StrandAnalytics`, pure, 9 unit tests): one rise and one fall of
+  smoothed heart rate is a round; a turn counts once heart rate has come back 10 bpm from its
+  extreme; a rise or fall shorter than 20 s is not a round; a brief dip inside one effort does not
+  split it. Tested to count the rounds put in across 72 generated session shapes.
+- `Strand/Fork/ForkSessionTracker.swift`: follows a live HIIT session (round, working or
+  recovering), takes the strap's double-tap as a station mark while the gesture is free, and shows a
+  summary with optional tags once the workout has been saved. Yoga and Stretch get a quiet card.
+  Rounds, marks and tags live in `ForkSessionNotes` (app preferences, keyed by the workout's start);
+  they are not in a `.noopbak` backup.
+- `Strand/Fork/ForkSessionViews.swift`: the live card, the summary, and the host that presents it.
+- Not proven, because it needs a strap and real sessions: how well rounds are found in real classes
+  (strength stations raise heart rate much less than cardio ones and can be missed), whether the
+  double-tap registers mid-session, and that the summary appears cleanly after ending.
+
 ### Next, in this order
 
 **1. Whole-app look pass (done, see above; the brief is kept for reference).** Bring every other screen up to the standard of Today by restyling the
@@ -162,7 +178,7 @@ runs and is not paused. It replaces the existing limited `coachZone` logic in
 (`Packages/WhoopProtocol/Sources/WhoopProtocol/HapticClock.swift`, `LiveSessionHaptics.swift`).
 The engine belongs in a package with unit tests that need no strap.
 
-**3. HIIT.** No setup: start and go. Rounds and rests are picked out from heart rate during the
+**3. HIIT (done, see above; the brief is kept for reference).** No setup: start and go. Rounds and rests are picked out from heart rate during the
 session; a double-tap on the strap optionally marks a new station (the app already treats the
 double-tap as a claimable event, see `AppModel.handleDoubleTap`). Live screen: working or recovering,
 current round and station, heart rate. Afterwards a session summary (rounds, stations, peak and
