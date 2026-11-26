@@ -12,6 +12,41 @@ Only the iPhone app is built here. Android and macOS are out of scope: the cross
 contract in `AGENTS.md` does not bind fork-only interface work, but stored data, analytics and
 the `.noopbak` format must stay exactly as upstream has them.
 
+## Where things stand (27 Nov 2026)
+
+Everything agreed so far is built and published. Each build contains the ones before it, so the
+newest is the one to install. `custom` is at the "Polish" merge.
+
+| Release | Build | Tag | Full tests run | On the phone |
+|---|---|---|---|---|
+| Feel | 435 (run 3) | `custom-v12.0.0-r3` | yes | yes, in daily use |
+| Look | 435.5 | `custom-v12.0.0-r5` | yes | no |
+| Runs | 435.6 | `custom-v12.0.0-r6` | yes | no |
+| HIIT | 435.7 | `custom-v12.0.0-r7` | yes | no |
+| Data | 435.8 | `custom-v12.0.0-r8` | yes | no |
+| Polish | 435.9 | `custom-v12.0.0-r9` | **no**, screenshots only | not confirmed |
+
+Owed before the next release:
+
+- **Tests on `custom`.** "Polish" was released on screenshots alone. Run `app-build.yml` and
+  `swift-packages.yml` on `custom` (see "How to work without a Mac").
+- **Real use.** Nothing after "Feel" has been tried with a strap. The "not proven" lines under each
+  release below are the list.
+
+Who built what, so a later session knows whose notes it is reading:
+
+- **A session on the owner's Mac** built the pipeline (`Custom iPhone build`, the install checker,
+  the screenshot workflow, the AltStore source and its tool), this plan, and releases Feel, Look,
+  Runs, HIIT and Data, each with the full tests.
+- **A cloud session and the session that reviewed it** built release Polish through pull request #1.
+
+Signing, for whoever installs: AltServer 1.8.4 failed to sign in with "HTTP 503" from about
+19 Nov 2026. The AltStore project's AltServer 1.8.5 (25 Nov 2026) fixes it and is what to use.
+`Tools/custom-altserver-503fix.sh` was the stopgap for 1.8.4 only and is no longer needed. A copy
+made by it cannot update itself ("The update is improperly signed"), because AltServer's updater
+only accepts an update when the running app carries the developer's own signature; update from the
+official app instead.
+
 ## Rules that must not be broken
 
 1. **No health or personal data in this repository,** in code, tests, screenshots, commit messages
