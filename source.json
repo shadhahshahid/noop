@@ -21,6 +21,17 @@
       "versions": [
         {
           "version": "12.0.0",
+          "buildVersion": "435.9",
+          "date": "2026-11-26",
+          "localizedDescription": "Flat rings and bars on Today, plain symbols in list rows, the same flat ring on Sleep, bare scores on the tiles, and one Charge across Today and Data.",
+          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r9/NOOP-ios-unsigned-v12.0.0-custom-r9.ipa",
+          "size": 22270866,
+          "sha256": "38a1073eedfa83f9bbc3251aa9cfeb14c9572065b3c8fb9659829961cacf0284",
+          "minOSVersion": "17.0",
+          "marketingVersion": "12.0.0 Polish"
+        },
+        {
+          "version": "12.0.0",
           "buildVersion": "435.8",
           "date": "2026-11-23",
           "localizedDescription": "Release Data: a Data home with search and headline numbers, and a Training screen (weekly load, intensity mix, markers, stretch streak). Includes releases Look, Runs and HIIT.",
@@ -62,17 +73,6 @@
           "sha256": "e2ac85ba046ac593c44acaaa32446565212cbd48b2f58c540b06605641db2f72",
           "minOSVersion": "17.0",
           "marketingVersion": "12.0.0 Look"
-        },
-        {
-          "version": "12.0.0",
-          "buildVersion": "435.4",
-          "date": "2026-11-23",
-          "localizedDescription": "Release Feel, rebuilt with its own build number so AltStore can update it in one tap.",
-          "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r4/NOOP-ios-unsigned-v12.0.0-custom-r4.ipa",
-          "size": 21969485,
-          "sha256": "28c7470ca1a4ae611181d2da85481047468f591396f05c9800a4d142a34bdf81",
-          "minOSVersion": "17.0",
-          "marketingVersion": "12.0.0 Feel"
         }
       ],
       "appPermissions": {
@@ -92,11 +92,11 @@
         }
       },
       "version": "12.0.0",
-      "buildVersion": "435.8",
-      "versionDate": "2026-11-23",
-      "versionDescription": "Release Data: a Data home with search and headline numbers, and a Training screen (weekly load, intensity mix, markers, stretch streak). Includes releases Look, Runs and HIIT.",
-      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r8/NOOP-ios-unsigned-v12.0.0-custom-r8.ipa",
-      "size": 22255268,
+      "buildVersion": "435.9",
+      "versionDate": "2026-11-26",
+      "versionDescription": "Flat rings and bars on Today, plain symbols in list rows, the same flat ring on Sleep, bare scores on the tiles, and one Charge across Today and Data.",
+      "downloadURL": "https://github.com/shadhahshahid/noop/releases/download/custom-v12.0.0-r9/NOOP-ios-unsigned-v12.0.0-custom-r9.ipa",
+      "size": 22270866,
       "minOSVersion": "17.0"
     }
   ],
