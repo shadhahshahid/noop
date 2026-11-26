@@ -1702,11 +1702,16 @@ struct LiquidTodayView: View {
             todayScored: day?.recovery != nil,
             isCalibrating: calNights != nil
         )
-        cachedChargeDisplay = ChargeDisplay.resolve(
-            todayRecovery: day?.recovery,
-            priorScored: priorScored,
-            calibrationNights: calNights,
-            todayKey: tkey)
+        // Personal fork: on today, the shown Charge comes from ForkChargeNow, the one resolver the Data tab
+        // reads too, so the two screens cannot show different Charge for the same day. It applies the same
+        // three rules as the inputs above; past days resolve here as before.
+        cachedChargeDisplay = selectedDayOffset == 0
+            ? ForkChargeNow.resolve(repo: repo).display
+            : ChargeDisplay.resolve(
+                todayRecovery: day?.recovery,
+                priorScored: priorScored,
+                calibrationNights: calNights,
+                todayKey: tkey)
 
         let cal = Calendar.current
         let dayStart = cal.startOfDay(for: selectedLogicalDay)
