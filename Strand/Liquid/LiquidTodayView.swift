@@ -803,6 +803,8 @@ struct LiquidTodayView: View {
                         // as hydration, so a card they had added keeps its place and returns on re-enable.
                         .filter { coachEnabled || $0 != .coach }) { card in
                 liquidCard(for: card)
+                    // Personal fork: the symbol this card's row leads with.
+                    .environment(\.forkRowSymbol, ForkRowSymbols.symbol(for: card))
             }
         }
     }
@@ -1139,10 +1141,10 @@ struct LiquidTodayView: View {
     private func cardLinkBody(title: String, sub: String, value: String,
                               tint: Color, frac: Double?) -> some View {
         HStack(spacing: 12) {
-                // tapPassesThrough: the vessel's splash gesture would otherwise swallow the enclosing
-                // Button's tap, leaving a dead 30pt disc on the leading edge of a tappable card row.
-                LiquidVessel(value: frac, tint: tint, animated: false, tapPassesThrough: true)
-                    .frame(width: 30, height: 30)
+                // Personal fork: a plain symbol, not a small ring filled to the value over a fixed
+                // constant (Strand/Fork/ForkRowSymbol.swift). The symbol is set per card at the call
+                // site, through the environment.
+                ForkRowSymbolSlot(tint: tint, size: 30)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.uppercased()).font(StrandFont.overlineScaled(11)).tracking(1.0)
                         .foregroundStyle(StrandPalette.textPrimary)
@@ -1279,10 +1281,13 @@ struct LiquidTodayView: View {
                 // surfaces cannot send the same vital to different trends.
                 vitalRow(String(localized: "Heart-rate variability"), unitText(hrv, "ms"),
                          StrandPalette.metricCyan, fracOver(hrv, 120), route: .metric("hrv"))
+                    .environment(\.forkRowSymbol, ForkRowSymbols.hrv)   // Personal fork
                 vitalRow(String(localized: "Resting heart rate"), unitText(rhr, "bpm"),
                          StrandPalette.metricRose, fracOver(rhr, 100), route: .metric("rhr"))
+                    .environment(\.forkRowSymbol, ForkRowSymbols.restingHr)   // Personal fork
                 vitalRow(String(localized: "Breaths per minute"), unitText(resp, "rpm", decimals: 1),
                          StrandPalette.accent, fracOver(resp, 24), route: .metric("resp_rate"))
+                    .environment(\.forkRowSymbol, ForkRowSymbols.respiratory)   // Personal fork
             }
         }
     }
@@ -1307,9 +1312,8 @@ struct LiquidTodayView: View {
     private func vitalRowBody(_ label: String, _ value: String, _ tint: Color, _ frac: Double?,
                               linked: Bool) -> some View {
         HStack(spacing: 12) {
-            // Same as cardLinkBody: without this the disc eats the row's NavigationLink tap.
-            LiquidVessel(value: frac, tint: tint, animated: false, tapPassesThrough: true)
-                .frame(width: 26, height: 26)
+            // Personal fork: a plain symbol in place of the small ring (Strand/Fork/ForkRowSymbol.swift).
+            ForkRowSymbolSlot(tint: tint, size: 26)
             Text(label).font(StrandFont.subhead).foregroundStyle(StrandPalette.textSecondary)
             Spacer()
             Text(value).font(StrandFont.number(15)).foregroundStyle(StrandPalette.textPrimary)
