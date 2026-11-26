@@ -78,9 +78,6 @@ struct ForkTodayHero: View {
 
     @State private var expanded = false
 
-    private static let ringSize: CGFloat = 176
-    private static let ringWidth: CGFloat = 12
-
     /// State colour for the score: the same three bands the Effort target is derived from.
     private var chargeColor: Color { Self.stateColor(charge: model.charge) }
 
@@ -134,29 +131,9 @@ struct ForkTodayHero: View {
     // MARK: Ring
 
     private var ring: some View {
-        let fraction = min(1, max(0, (model.charge ?? 0) / 100))
-        return ZStack {
-            Circle()
-                .stroke(StrandPalette.surfaceInset, lineWidth: Self.ringWidth)
-            Circle()
-                .trim(from: 0, to: animated ? fraction : 0)
-                .stroke(chargeColor, style: StrokeStyle(lineWidth: Self.ringWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.8), value: animated)
-                .animation(.easeOut(duration: 0.5), value: fraction)
-            VStack(spacing: 2) {
-                Text(verbatim: model.charge.map { String(Int($0.rounded())) } ?? "–")
-                    .font(StrandFont.rounded(64, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(StrandPalette.textPrimary)
-                Text("CHARGE")
-                    .font(StrandFont.overline)
-                    .tracking(1.6)
-                    .foregroundStyle(StrandPalette.textSecondary)
-            }
-        }
-        .frame(width: Self.ringSize, height: Self.ringSize)
-        .contentShape(Circle())
+        // The same ring the Sleep hero draws (ForkScoreRing.swift), so the app's two scores match.
+        ForkScoreRing(score: model.charge, tint: chargeColor, caption: String(localized: "Charge"),
+                      revealed: animated)
     }
 
     // MARK: Verdict

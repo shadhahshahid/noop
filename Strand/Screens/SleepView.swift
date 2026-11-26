@@ -543,17 +543,11 @@ struct SleepView: View {
                 .accessibilityAddTraits(.isHeader)
 
             if let score {
-                // Same LiquidVessel gauge as Home (`LiquidTodayView` / `HeroScoreCell`).
+                // Personal fork: the same flat ring as Today's Charge hero (Strand/Fork/ForkScoreRing.swift),
+                // in place of upstream's thick banded `LiquidScoreGauge`, so the two scores look alike.
                 VStack(spacing: 8) {
-                    LiquidScoreGauge(
-                        score: score,
-                        tint: StrandPalette.restColor,
-                        diameter: 184,
-                        animated: true,
-                        captionText: String(localized: "of 100"),
-                        numberColor: StrandPalette.textPrimary,
-                        captionColor: StrandPalette.textSecondary
-                    )
+                    ForkScoreRing(score: score, tint: StrandPalette.restColor,
+                                  caption: String(localized: "of 100"))
                     Text(sleepScoreWord(score))
                         .font(StrandFont.subhead.weight(.semibold))
                         .foregroundStyle(StrandPalette.textPrimary)
