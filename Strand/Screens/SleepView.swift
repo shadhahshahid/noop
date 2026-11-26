@@ -532,9 +532,11 @@ struct SleepView: View {
         let score = performanceScore(for: night)
         VStack(spacing: 0) {
             Text("Sleep")
+                // Personal fork: the hero sits on the plain canvas now, not on the night scene, so its text
+                // takes the theme's own text colours (white on a light canvas could not be read) and
+                // drops the shadows that lifted it off the photograph.
                 .font(StrandFont.rounded(24, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.96))
-                .shadow(color: .black.opacity(0.35), radius: 5, y: 1)
+                .foregroundStyle(StrandPalette.textPrimary)
                 .padding(.top, 6)
                 .accessibilityAddTraits(.isHeader)
 
@@ -547,13 +549,12 @@ struct SleepView: View {
                         diameter: 184,
                         animated: true,
                         captionText: String(localized: "of 100"),
-                        numberColor: Color.white.opacity(0.98),
-                        captionColor: Color.white.opacity(0.52)
+                        numberColor: StrandPalette.textPrimary,
+                        captionColor: StrandPalette.textSecondary
                     )
                     Text(sleepScoreWord(score))
                         .font(StrandFont.subhead.weight(.semibold))
-                        .foregroundStyle(Color.white.opacity(0.90))
-                        .shadow(color: .black.opacity(0.30), radius: 2, y: 1)
+                        .foregroundStyle(StrandPalette.textPrimary)
                 }
                 .padding(.top, 8)
                 .accessibilityElement(children: .ignore)
@@ -564,11 +565,11 @@ struct SleepView: View {
                         value: night.stages.asleep,
                         format: { durationText($0) },
                         font: StrandFont.number(42),
-                        color: Color.white.opacity(0.96)
+                        color: StrandPalette.textPrimary
                     )
                     Text("asleep last night")
                         .font(StrandFont.subhead)
-                        .foregroundStyle(Color.white.opacity(0.72))
+                        .foregroundStyle(StrandPalette.textSecondary)
                 }
                 .padding(.top, 14)
                 .padding(.bottom, 4)

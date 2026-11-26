@@ -1,6 +1,6 @@
 # Screens the screenshot workflow captures on this branch (see docs/fork/PLAN.md).
 # "+N" also captures N further screenfuls below the first.
 shell+3
-shell-light+1
-tab1+1 tab2+3 tab4+1
-tab2-light
+shell-light+3
+tab2+3 tab2-light+1
+tab1+1 tab3+1 tab4
