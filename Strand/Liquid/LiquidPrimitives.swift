@@ -168,6 +168,8 @@ enum LiquidRender {
             startPoint: CGPoint(x: 0, y: usesCleanFill ? h / 2 : 0),
             endPoint: CGPoint(x: usesCleanFill ? w : 0, y: usesCleanFill ? h / 2 : h)
         ))
+        // Personal fork: a flat bar has no highlight line and no sparkle flecks either.
+        if ForkFlatMarks.flatBars { return }
         if showsHighlight {
             clip.fill(Path(CGRect(x: 2, y: 1.2, width: max(0, edge - r * 0.6), height: 1)),
                       with: .color(.white.opacity(0.12)))
