@@ -13,7 +13,10 @@
 #       "shell" is the full tab shell on its first tab and "tab1" … "tab4" open it on another tab;
 #       every other name is passed to `--demo-screen <name>` (see DemoScreens in
 #       StrandiOS/App/StrandiOSApp.swift). Add "-light" to any name to capture it in the light
-#       theme. With no screen names, a default set is captured.
+#       theme. Add "+N" to also capture N further screenfuls below the first, for example
+#       "shell+3" or "tab3-light+1"; those are written as <name>_p1.png … <name>_pN.png, and
+#       capture stops early at the bottom of the screen. With no screen names, a default set
+#       is captured.
 
 set -euo pipefail
 
@@ -69,9 +72,16 @@ capture() {
   xcrun simctl launch "$udid" "$bundle_id" --demo-seed
   sleep "$SEED_WAIT"
 
-  local name
-  for name in "${screens[@]}"; do
-    xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+  local entry
+  for entry in "${screens[@]}"; do
+    # "name+N": N further screenfuls below the first one.
+    local name="${entry%%+*}" pages=0
+    case "$entry" in
+      *+*) pages="${entry##*+}" ;;
+    esac
+    case "$pages" in
+      ''|*[!0-9]*) echo "bad page count in '$entry'"; exit 2 ;;
+    esac
     local base="$name"
     local args=(--demo-seed)
     case "$name" in
@@ -86,17 +96,36 @@ capture() {
       tab[0-4]) args+=(--demo-tab "${base#tab}") ;;
       *) args+=(--demo-screen "$base") ;;
     esac
-    xcrun simctl launch "$udid" "$bundle_id" "${args[@]}"
-    sleep "$DRAW_WAIT"
-    xcrun simctl io "$udid" screenshot "$out/$name.png"
-    echo "captured $name"
+
+    local page file previous=""
+    for page in $(seq 0 "$pages"); do
+      xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+      file="$out/$name.png"
+      local page_args=("${args[@]}")
+      if [ "$page" -gt 0 ]; then
+        file="$out/${name}_p${page}.png"
+        # DEBUG-only: scrolls the screen down by this many screenfuls (ForkDemoScroll).
+        page_args+=(--demo-scroll-page "$page")
+      fi
+      xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
+      sleep "$DRAW_WAIT"
+      xcrun simctl io "$udid" screenshot "$file"
+      # A screenful identical to the one before it means the bottom was already reached.
+      if [ -n "$previous" ] && cmp -s "$previous" "$file"; then
+        rm -f "$file"
+        echo "bottom of $name reached before page $page"
+        break
+      fi
+      previous="$file"
+      echo "captured $(basename "$file")"
+    done
   done
   xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
 
   # Every requested screen must have produced a non-empty image.
   local missing=0
-  for name in "${screens[@]}"; do
-    [ -s "$out/$name.png" ] || { echo "missing screenshot: $name"; missing=1; }
+  for entry in "${screens[@]}"; do
+    [ -s "$out/${entry%%+*}.png" ] || { echo "missing screenshot: ${entry%%+*}"; missing=1; }
   done
   [ "$missing" -eq 0 ] || exit 1
   ls -l "$out"
