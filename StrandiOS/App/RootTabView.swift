@@ -455,6 +455,8 @@ struct RootTabView: View {
         NavigationStack(path: path) {
             view
                 .background(StrandPalette.surfaceBase.ignoresSafeArea())
+                // Personal fork: scrolled content must not draw under the clock.
+                .forkStatusBarScrim()
                 .toolbar(.hidden, for: .navigationBar)
                 .tabRouteDestinations()
         }
@@ -478,6 +480,8 @@ struct RootTabView: View {
                 // replaces the four long collapsible sections. Every destination is still reachable.
                 ForkMoreMenu(coachEnabled: coachEnabled)
             }
+            // Personal fork: scrolled content must not draw under the clock.
+            .forkStatusBarScrim()
             // The rows push MoreDestination VALUES so a re-tap of the More tab can pop them off the
             // bound path (#135/#198). Each destination keeps the per-screen wrapper the rows used to
             // apply inline (surfaceBase background, inline title bar, hidden bar background):

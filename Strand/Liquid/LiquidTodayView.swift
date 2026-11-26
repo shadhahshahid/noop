@@ -1370,7 +1370,9 @@ struct LiquidTodayView: View {
             // score tile, aligning the liquid grid with the classic macOS grid and Android.
             LazyVGrid(
                 columns: Array(
-                    repeating: GridItem(.flexible(), spacing: NoopMetrics.gap),
+                    // Personal fork: tiles in a row share a top edge, so a taller neighbour cannot
+                    // push a tile's label and value down.
+                    repeating: GridItem(.flexible(), spacing: NoopMetrics.gap, alignment: .top),
                     count: 2
                 ),
                 spacing: NoopMetrics.gap
@@ -1477,11 +1479,15 @@ struct LiquidTodayView: View {
                        key: String? = nil, detailMetric: MetricDescriptor? = nil, caption: String? = nil) -> some View {
         let displayValue = Self.tileDisplayValue(value, unit: unit)
         let tile = VStack(alignment: .leading, spacing: 10) {
+            // Personal fork: the label, value and optional caption sit in one block of a fixed
+            // minimum height, so the bar under it lands at the same height in every tile.
+            VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(tint.opacity(0.72))
-                    .frame(width: 14)
+                    // Personal fork: a fixed height too; symbols differ in height and shifted the row.
+                    .frame(width: 14, height: 14)
                 Text(label.uppercased())
                     .font(StrandFont.overlineScaled(10))
                     .tracking(1.0)
@@ -1503,7 +1509,11 @@ struct LiquidTodayView: View {
                     .foregroundStyle(StrandPalette.textTertiary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    // Personal fork: the caption sits close under its value.
+                    .padding(.top, -8)
             }
+            }
+            .frame(minHeight: ForkTodayTileMetrics.headBlockMinHeight, alignment: .topLeading)
             LiquidTube(frac: frac ?? 0, tint: tint, height: 9, animated: false,
                        showsHighlight: false, usesCleanFill: true)
             // #430 parity: DETAILED tiles grow the trend graph under the bar, tinted to the metric and

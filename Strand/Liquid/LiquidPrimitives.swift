@@ -17,6 +17,12 @@ enum LiquidRender {
     /// this pass only deepens the material — recessed track, frosted inner disc, semantic progress
     /// gradient — without neon bloom, tip dots, or layout changes.
     static func vessel(_ base: GraphicsContext, _ size: CGSize, _ sim: LiquidSim, now: Double, tint: Color) {
+        // Personal fork: a small ring is a plain track and one flat arc (Strand/Fork/ForkFlatMarks.swift).
+        // Everything below draws hero-size rings only.
+        if ForkFlatMarks.isSmallRing(size) {
+            ForkFlatMarks.ring(base, size: size, level: sim.level, tint: tint)
+            return
+        }
         let diameter = max(2, min(size.width, size.height) - 3)
         let rect = CGRect(x: (size.width - diameter) / 2, y: (size.height - diameter) / 2,
                           width: diameter, height: diameter)
@@ -150,9 +156,13 @@ enum LiquidRender {
         p.addQuadCurve(to: CGPoint(x: edge - r * 0.3, y: h), control: CGPoint(x: edge + bulge, y: h / 2))
         p.addLine(to: CGPoint(x: 0, y: h))
         p.closeSubpath()
-        let fillGradient = usesCleanFill
-            ? progressGradient(tint)
-            : Gradient(colors: [tint.opacity(0.84), tint.liquidDarker(0.28).opacity(0.86)])
+        // Personal fork: a bar's fill is one flat colour. Upstream's banded and shaded fills stay in
+        // the other branch so a later upstream merge still applies.
+        let fillGradient = ForkFlatMarks.flatBars
+            ? Gradient(colors: [tint, tint])
+            : (usesCleanFill
+                ? progressGradient(tint)
+                : Gradient(colors: [tint.opacity(0.84), tint.liquidDarker(0.28).opacity(0.86)]))
         clip.fill(p, with: .linearGradient(
             fillGradient,
             startPoint: CGPoint(x: 0, y: usesCleanFill ? h / 2 : 0),

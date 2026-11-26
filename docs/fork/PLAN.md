@@ -185,14 +185,16 @@ is one pull request into `custom` and must prove what is listed before the next 
    Proves: the lower half of Today is visible, with its faults, on synthetic data.
 2. **Today, lower half.** The owner's complaint is the banded dark-and-light gradient on every
    small ring and bar (`LiquidRender.progressGradient` in `Strand/Liquid/LiquidPrimitives.swift`,
-   used in about 50 places); hero-size rings keep it. Also: tiles in a row line up, nothing draws
-   under the clock, and a bar is shown only where its length means something (several tile bars
-   are the value over an arbitrary constant). Proves: paged dark and light screenshots.
+   used in about 50 places); hero-size rings keep it (`Strand/Fork/ForkFlatMarks.swift`). Also:
+   tiles in a row line up, and nothing draws under the clock
+   (`StrandiOS/Fork/ForkStatusBarScrim.swift`). Proves: paged dark and light screenshots.
 3. **Data page.** The owner finds it "missing something"; ask before building. Candidates: a mark
    and a "against your usual" line per headline number (`TypicalRangeBar` in StrandDesign exists
    and is unused), a range control with small trend lines, one plain finding with its sample
    size. The Charge tile there reads the raw recovery value while Today shows the resolved
-   Charge; they must come from the same place.
+   Charge; they must come from the same place. The same range mark should then replace the bars
+   on Today's Key metrics tiles: several of those bars are the value over an arbitrary constant
+   (HRV over 120, resting heart rate over 100) and say nothing.
 4. **Aura's type and primitives, as a trial on one screen.** Their design files need `#if os(iOS)`
    around them (this app also builds watch and Mac targets, Aura does not) and the three font
    licence texts shipped beside the fonts. Roll out only after the owner approves the trial.
