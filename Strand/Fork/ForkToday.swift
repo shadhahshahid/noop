@@ -30,6 +30,27 @@ struct ForkDriver: Identifiable, Equatable {
         case .bad:     return StrandPalette.statusCritical
         }
     }
+
+    /// The state as a shape, so it does not rest on colour alone. Not an arrow: for resting heart
+    /// rate "good" means lower, and an arrow would be read as the direction the number moved.
+    var symbol: String {
+        switch tone {
+        case .good:    return "checkmark.circle.fill"
+        case .neutral: return "minus.circle.fill"
+        case .watch:   return "exclamationmark.circle.fill"
+        case .bad:     return "exclamationmark.triangle.fill"
+        }
+    }
+
+    /// The state in a word, for VoiceOver.
+    var stateWord: String {
+        switch tone {
+        case .good:    return String(localized: "Good")
+        case .neutral: return String(localized: "Usual")
+        case .watch:   return String(localized: "Watch")
+        case .bad:     return String(localized: "Low")
+        }
+    }
 }
 
 /// Everything the hero draws. Effort values are already on the wearer's chosen display scale.
@@ -57,12 +78,13 @@ struct ForkTodayHero: View {
 
     @State private var expanded = false
 
-    private static let ringSize: CGFloat = 176
-    private static let ringWidth: CGFloat = 12
-
     /// State colour for the score: the same three bands the Effort target is derived from.
-    private var chargeColor: Color {
-        guard let charge = model.charge else { return StrandPalette.textTertiary }
+    private var chargeColor: Color { Self.stateColor(charge: model.charge) }
+
+    /// The one place Charge is turned into a state colour. The hero ring and the Charge tile under
+    /// it both ask here, so the same score cannot be amber in one place and green in another.
+    static func stateColor(charge: Double?) -> Color {
+        guard let charge else { return StrandPalette.textTertiary }
         if charge >= 67 { return StrandPalette.statusPositive }
         if charge >= 34 { return StrandPalette.statusWarning }
         return StrandPalette.statusCritical
@@ -109,29 +131,9 @@ struct ForkTodayHero: View {
     // MARK: Ring
 
     private var ring: some View {
-        let fraction = min(1, max(0, (model.charge ?? 0) / 100))
-        return ZStack {
-            Circle()
-                .stroke(StrandPalette.surfaceInset, lineWidth: Self.ringWidth)
-            Circle()
-                .trim(from: 0, to: animated ? fraction : 0)
-                .stroke(chargeColor, style: StrokeStyle(lineWidth: Self.ringWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.8), value: animated)
-                .animation(.easeOut(duration: 0.5), value: fraction)
-            VStack(spacing: 2) {
-                Text(verbatim: model.charge.map { String(Int($0.rounded())) } ?? "–")
-                    .font(StrandFont.rounded(64, weight: .semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(StrandPalette.textPrimary)
-                Text("CHARGE")
-                    .font(StrandFont.overline)
-                    .tracking(1.6)
-                    .foregroundStyle(StrandPalette.textSecondary)
-            }
-        }
-        .frame(width: Self.ringSize, height: Self.ringSize)
-        .contentShape(Circle())
+        // The same ring the Sleep hero draws (ForkScoreRing.swift), so the app's two scores match.
+        ForkScoreRing(score: model.charge, tint: chargeColor, caption: String(localized: "Charge"),
+                      revealed: animated)
     }
 
     // MARK: Verdict
@@ -179,7 +181,11 @@ struct ForkTodayHero: View {
     private func driverCell(_ driver: ForkDriver) -> some View {
         VStack(spacing: NoopMetrics.space1) {
             HStack(spacing: 6) {
-                Circle().fill(driver.color).frame(width: 6, height: 6)
+                Image(systemName: driver.symbol)
+                    .font(StrandFont.caption)
+                    .imageScale(.small)
+                    .foregroundStyle(driver.color)
+                    .accessibilityLabel(driver.stateWord)
                 Text(verbatim: driver.label)
                     .font(StrandFont.caption)
                     .foregroundStyle(StrandPalette.textSecondary)
@@ -205,6 +211,12 @@ struct ForkTodayHero: View {
             : String(format: "%.\(model.effortDecimals)f", value)
     }
 
+    /// A target is a guide, not a reading: whole numbers on the 0 to 100 scale ("Target 48 to 67"),
+    /// one decimal only on the 0 to 21 scale, where a whole step is too coarse.
+    private func targetNumber(_ value: Double) -> String {
+        model.effortMax > 21 ? String(Int(value.rounded())) : String(format: "%.1f", value)
+    }
+
     /// Where today's Effort sits against the band, in words.
     private var effortNote: (text: String, color: Color) {
         guard let effort = model.effort else {
@@ -214,7 +226,7 @@ struct ForkTodayHero: View {
             return (String(localized: "Target appears once Charge is scored"), StrandPalette.textTertiary)
         }
         if effort < target.lowerBound {
-            return (String(localized: "\(number(target.lowerBound - effort)) to reach your target"),
+            return (String(localized: "\(targetNumber(target.lowerBound - effort)) to reach your target"),
                     StrandPalette.textSecondary)
         }
         if effort <= target.upperBound {
@@ -232,7 +244,7 @@ struct ForkTodayHero: View {
                     .foregroundStyle(StrandPalette.textSecondary)
                 Spacer(minLength: NoopMetrics.space2)
                 if let target = model.effortTarget {
-                    Text(verbatim: String(localized: "Target \(number(target.lowerBound)) to \(number(target.upperBound))"))
+                    Text(verbatim: String(localized: "Target \(targetNumber(target.lowerBound)) to \(targetNumber(target.upperBound))"))
                         .font(StrandFont.caption)
                         .foregroundStyle(StrandPalette.textSecondary)
                 }
@@ -320,6 +332,7 @@ struct ForkQuickStarts: View {
                         Text("All activities")
                             .font(StrandFont.caption)
                             .foregroundStyle(StrandPalette.textSecondary)
+                            .forkTapTarget()
                     }
                     .buttonStyle(.plain)
                 }

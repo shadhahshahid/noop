@@ -518,6 +518,8 @@ struct SleepView: View {
                 Label("Customize", systemImage: "slider.horizontal.3")
                     .font(StrandFont.footnote)
                     .foregroundStyle(StrandPalette.textTertiary)
+                    // Personal fork: a 44-point tap area.
+                    .forkTapTarget()
             }
             .buttonStyle(.plain)
         }
@@ -532,28 +534,23 @@ struct SleepView: View {
         let score = performanceScore(for: night)
         VStack(spacing: 0) {
             Text("Sleep")
+                // Personal fork: the hero sits on the plain canvas now, not on the night scene, so its text
+                // takes the theme's own text colours (white on a light canvas could not be read) and
+                // drops the shadows that lifted it off the photograph.
                 .font(StrandFont.rounded(24, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.96))
-                .shadow(color: .black.opacity(0.35), radius: 5, y: 1)
+                .foregroundStyle(StrandPalette.textPrimary)
                 .padding(.top, 6)
                 .accessibilityAddTraits(.isHeader)
 
             if let score {
-                // Same LiquidVessel gauge as Home (`LiquidTodayView` / `HeroScoreCell`).
+                // Personal fork: the same flat ring as Today's Charge hero (Strand/Fork/ForkScoreRing.swift),
+                // in place of upstream's thick banded `LiquidScoreGauge`, so the two scores look alike.
                 VStack(spacing: 8) {
-                    LiquidScoreGauge(
-                        score: score,
-                        tint: StrandPalette.restColor,
-                        diameter: 184,
-                        animated: true,
-                        captionText: String(localized: "of 100"),
-                        numberColor: Color.white.opacity(0.98),
-                        captionColor: Color.white.opacity(0.52)
-                    )
+                    ForkScoreRing(score: score, tint: StrandPalette.restColor,
+                                  caption: String(localized: "of 100"))
                     Text(sleepScoreWord(score))
                         .font(StrandFont.subhead.weight(.semibold))
-                        .foregroundStyle(Color.white.opacity(0.90))
-                        .shadow(color: .black.opacity(0.30), radius: 2, y: 1)
+                        .foregroundStyle(StrandPalette.textPrimary)
                 }
                 .padding(.top, 8)
                 .accessibilityElement(children: .ignore)
@@ -564,11 +561,11 @@ struct SleepView: View {
                         value: night.stages.asleep,
                         format: { durationText($0) },
                         font: StrandFont.number(42),
-                        color: Color.white.opacity(0.96)
+                        color: StrandPalette.textPrimary
                     )
                     Text("asleep last night")
                         .font(StrandFont.subhead)
-                        .foregroundStyle(Color.white.opacity(0.72))
+                        .foregroundStyle(StrandPalette.textSecondary)
                 }
                 .padding(.top, 14)
                 .padding(.bottom, 4)
@@ -2643,7 +2640,9 @@ struct SleepMarkCard: View {
                     HStack(spacing: NoopMetrics.gap) {
                         // Routed through the unified NoopButton system so the two marks sit identically
                         // (sentence-case label, leading icon at 8pt, controlHeight=48, no glow).
-                        NoopButton("Going to sleep", systemImage: "moon.zzz.fill",
+                        // Personal fork: "Bedtime". "Going to sleep" did not fit half the card and was
+                        // cut to "Going to sl…". VoiceOver still reads the full "Log going to sleep".
+                        NoopButton("Bedtime", systemImage: "moon.zzz.fill",
                                    kind: .secondary, fullWidth: true) { logMark(.bedtime) }
                             .accessibilityLabel("Log going to sleep")
 

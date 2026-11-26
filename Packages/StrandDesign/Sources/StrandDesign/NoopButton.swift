@@ -70,8 +70,10 @@ struct NoopButtonAppearance {
             border = nil
             usesPanelSurface = false
         case .secondary:
-            // Personal fork: a control fill one step above the card, since cards no longer have a rim.
-            fill = StrandPalette.surfaceOverlay
+            // Personal fork: a control fill one step off the card, since cards no longer have a rim.
+            // The inset tone: in the dark theme it is the same value as before, and in the light
+            // theme it is a grey that shows on a white card (the overlay tone there is white too).
+            fill = StrandPalette.surfaceInset
             label = StrandPalette.textPrimary
             border = nil
             usesPanelSurface = false

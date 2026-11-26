@@ -13,13 +13,19 @@
 #       "shell" is the full tab shell on its first tab and "tab1" … "tab4" open it on another tab;
 #       every other name is passed to `--demo-screen <name>` (see DemoScreens in
 #       StrandiOS/App/StrandiOSApp.swift). Add "-light" to any name to capture it in the light
-#       theme. With no screen names, a default set is captured.
+#       theme. Add "+N" to also capture N further screenfuls below the first, for example
+#       "shell+3" or "tab3-light+1"; those are written as <name>_p1.png … <name>_pN.png.
+#       Capture stops early when a screenful is byte-identical to the one before it, which
+#       happens on a screen that does not scroll; a screen with anything animating may repeat
+#       its last screenful instead. With no screen names, a default set is captured.
 
 set -euo pipefail
 
 # First launch seeds the synthetic history before anything renders; later launches only draw.
 SEED_WAIT="${SEED_WAIT:-45}"
 DRAW_WAIT="${DRAW_WAIT:-10}"
+# A full-size screenshot of a drawn screen is several hundred kilobytes; an all-black one is far smaller.
+BLANK_BYTES="${BLANK_BYTES:-60000}"
 
 pick_sim() {
   xcrun simctl list devices available --json | python3 -c '
@@ -69,9 +75,16 @@ capture() {
   xcrun simctl launch "$udid" "$bundle_id" --demo-seed
   sleep "$SEED_WAIT"
 
-  local name
-  for name in "${screens[@]}"; do
-    xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+  local entry
+  for entry in "${screens[@]}"; do
+    # "name+N": N further screenfuls below the first one.
+    local name="${entry%%+*}" pages=0
+    case "$entry" in
+      *+*) pages="${entry##*+}" ;;
+    esac
+    case "$pages" in
+      ''|*[!0-9]*) echo "bad page count in '$entry'"; exit 2 ;;
+    esac
     local base="$name"
     local args=(--demo-seed)
     case "$name" in
@@ -86,17 +99,53 @@ capture() {
       tab[0-4]) args+=(--demo-tab "${base#tab}") ;;
       *) args+=(--demo-screen "$base") ;;
     esac
-    xcrun simctl launch "$udid" "$bundle_id" "${args[@]}"
-    sleep "$DRAW_WAIT"
-    xcrun simctl io "$udid" screenshot "$out/$name.png"
-    echo "captured $name"
+
+    local page file previous=""
+    for page in $(seq 0 "$pages"); do
+      xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+      file="$out/$name.png"
+      local page_args=("${args[@]}")
+      if [ "$page" -gt 0 ]; then
+        file="$out/${name}_p${page}.png"
+        # DEBUG-only: scrolls the screen down by this many screenfuls (ForkDemoScroll).
+        page_args+=(--demo-scroll-page "$page")
+      fi
+      xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
+      sleep "$DRAW_WAIT"
+      xcrun simctl io "$udid" screenshot "$file"
+      # A picture this small is a blank frame: the app had not drawn yet. Wait and take it again; one
+      # retry was not always enough (a dark paged capture came back blank twice), so the last attempt
+      # relaunches the app first. A frame still blank after that is reported, not hidden.
+      local attempt
+      for attempt in 1 2 3; do
+        [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ] || break
+        echo "blank frame for $(basename "$file"); retry $attempt"
+        if [ "$attempt" -eq 3 ]; then
+          xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+          xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
+        fi
+        sleep "$DRAW_WAIT"
+        xcrun simctl io "$udid" screenshot "$file"
+      done
+      if [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ]; then
+        echo "still blank after retries: $(basename "$file")"
+      fi
+      # A screenful identical to the one before it means the bottom was already reached.
+      if [ -n "$previous" ] && cmp -s "$previous" "$file"; then
+        rm -f "$file"
+        echo "bottom of $name reached before page $page"
+        break
+      fi
+      previous="$file"
+      echo "captured $(basename "$file")"
+    done
   done
   xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
 
   # Every requested screen must have produced a non-empty image.
   local missing=0
-  for name in "${screens[@]}"; do
-    [ -s "$out/$name.png" ] || { echo "missing screenshot: $name"; missing=1; }
+  for entry in "${screens[@]}"; do
+    [ -s "$out/${entry%%+*}.png" ] || { echo "missing screenshot: ${entry%%+*}"; missing=1; }
   done
   [ "$missing" -eq 0 ] || exit 1
   ls -l "$out"

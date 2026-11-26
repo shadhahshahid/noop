@@ -1,4 +1,6 @@
 # Screens the screenshot workflow captures on this branch (see docs/fork/PLAN.md).
-shell tab1 tab3
-forktraining trends
-tab3-light forktraining-light
+# "+N" also captures N further screenfuls below the first.
+shell+3
+shell-light+3
+tab2+3 tab2-light+1
+tab1+1 tab3+1 tab3-light tab4

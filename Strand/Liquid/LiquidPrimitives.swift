@@ -17,6 +17,12 @@ enum LiquidRender {
     /// this pass only deepens the material — recessed track, frosted inner disc, semantic progress
     /// gradient — without neon bloom, tip dots, or layout changes.
     static func vessel(_ base: GraphicsContext, _ size: CGSize, _ sim: LiquidSim, now: Double, tint: Color) {
+        // Personal fork: a small ring is a plain track and one flat arc (Strand/Fork/ForkFlatMarks.swift).
+        // Everything below draws hero-size rings only.
+        if ForkFlatMarks.isSmallRing(size) {
+            ForkFlatMarks.ring(base, size: size, level: sim.level, tint: tint)
+            return
+        }
         let diameter = max(2, min(size.width, size.height) - 3)
         let rect = CGRect(x: (size.width - diameter) / 2, y: (size.height - diameter) / 2,
                           width: diameter, height: diameter)
@@ -150,14 +156,20 @@ enum LiquidRender {
         p.addQuadCurve(to: CGPoint(x: edge - r * 0.3, y: h), control: CGPoint(x: edge + bulge, y: h / 2))
         p.addLine(to: CGPoint(x: 0, y: h))
         p.closeSubpath()
-        let fillGradient = usesCleanFill
-            ? progressGradient(tint)
-            : Gradient(colors: [tint.opacity(0.84), tint.liquidDarker(0.28).opacity(0.86)])
+        // Personal fork: a bar's fill is one flat colour. Upstream's banded and shaded fills stay in
+        // the other branch so a later upstream merge still applies.
+        let fillGradient = ForkFlatMarks.flatBars
+            ? Gradient(colors: [tint, tint])
+            : (usesCleanFill
+                ? progressGradient(tint)
+                : Gradient(colors: [tint.opacity(0.84), tint.liquidDarker(0.28).opacity(0.86)]))
         clip.fill(p, with: .linearGradient(
             fillGradient,
             startPoint: CGPoint(x: 0, y: usesCleanFill ? h / 2 : 0),
             endPoint: CGPoint(x: usesCleanFill ? w : 0, y: usesCleanFill ? h / 2 : h)
         ))
+        // Personal fork: a flat bar has no highlight line and no sparkle flecks either.
+        if ForkFlatMarks.flatBars { return }
         if showsHighlight {
             clip.fill(Path(CGRect(x: 2, y: 1.2, width: max(0, edge - r * 0.6), height: 1)),
                       with: .color(.white.opacity(0.12)))
@@ -603,7 +615,9 @@ struct LiquidScoreGauge: View {
                 }
             }
             .foregroundStyle(numberColor)
-            .shadow(color: .black.opacity(0.5), radius: 6, y: 1)
+            // Personal fork: no shadow behind the number. It was a grey smudge in the light theme and
+            // cannot be seen on the dark ring.
+            .shadow(color: .clear, radius: 0)
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .allowsHitTesting(false)

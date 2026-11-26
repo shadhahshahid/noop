@@ -60,9 +60,14 @@ starts a comment). Without that file the script's default set is used. Names:
 - Any other name is passed to `--demo-screen <name>`, mapped in `DemoScreens` in
   `StrandiOS/App/StrandiOSApp.swift`. **Add a case there for every new screen** so it can be captured.
 - Add `-light` to any name to capture it in the light theme.
+- Add `+N` to any name to also capture N further screenfuls below the first (`shell+3`,
+  `tab3-light+1`). They are written as `<name>_p1.png` …; a screen with anything animating may
+  repeat its last screenful. **Capture every screen to its bottom before calling it done:** the
+  lower half of Today went unreviewed through five releases because only the first screenful was
+  photographed. A system notification can land on a capture; look, and re-run if one did.
 
-Things the screenshots cannot show: taps, scrolling below the first screenful, animation, Bluetooth,
-GPS, haptics, and real data. Say so when reporting; the owner tests those on the phone.
+Things the screenshots cannot show: taps, animation, Bluetooth, GPS, haptics, and real data. Say so
+when reporting; the owner tests those on the phone.
 
 Tests: upstream's `app-build.yml` (Mac build plus about 2,270 app tests) and `swift-packages.yml`
 are kept disabled in this fork and are started by hand before a release. If a change touches
@@ -170,11 +175,71 @@ wordy explanatory copy on several screens.
 - Left out on purpose: the Sleep screen was not redesigned (it already leads with one score), and
   the Training screen shows no "pattern" line; the existing Patterns screen is linked from Data.
 
-### Next
+### Next: release "Polish"
 
-Nothing further is planned. Everything built so far is waiting to be tried on the phone with a strap;
-what each release could not prove without one is listed under it above. Fix what real use turns up
-before adding more.
+Agreed with the owner after a review of the app as used, of Aura (another NOOP-based app whose
+12.1.7 source is published under the same licence), of what is publicly described of the WHOOP
+and Oura apps, and an independent critique of the first draft of this plan. In order; each step
+is one pull request into `custom` and must prove what is listed before the next starts.
+
+1. **See the whole screen.** `+N` paged screenshots (done, see "How to work without a Mac").
+   Proves: the lower half of Today is visible, with its faults, on synthetic data.
+2. **Today, lower half.** The owner's complaint is the banded dark-and-light gradient on every
+   small ring and bar (`LiquidRender.progressGradient` in `Strand/Liquid/LiquidPrimitives.swift`,
+   used in about 50 places); hero-size rings keep it (`Strand/Fork/ForkFlatMarks.swift`). Also:
+   tiles in a row line up, and nothing draws under the clock
+   (`StrandiOS/Fork/ForkStatusBarScrim.swift`). Proves: paged dark and light screenshots.
+   After two independent reviews (one against Apple's Human Interface Guidelines, one product
+   critique) the same pull request also took: one name per score on Today's tiles (Charge,
+   Effort, Sleep), the Charge tile in the hero ring's state colour from one resolver
+   (`ForkTodayHero.stateColor`), Effort with one decimal everywhere, a bar only on the three
+   scores, state symbols beside the hero's drivers, nothing under 11 points, and 44-point tap
+   areas (`forkTapTarget`).
+
+   Shipped as the build named "Polish" (More → About).
+
+   Decided by the owner and done in the same pull request:
+   - Small rings in list rows (Recovery vitals, Your cards) are plain symbols now
+     (`Strand/Fork/ForkRowSymbol.swift`), matching the Key metrics tile symbols.
+   - Sleep's hero draws the same flat ring as Today's Charge (`Strand/Fork/ForkScoreRing.swift`).
+   - Charge and Sleep tiles show bare scores, no "%", as the hero does.
+   - Today's repeated HRV and resting heart rate: the owner trims Key metrics with its Edit button
+     (HRV, Rest HR and Respiratory are already in the hero and Recovery vitals). No code: the saved
+     layout is never overwritten, and upstream's default orders are pinned by its tests.
+
+   Raised by the reviews and still waiting for the owner's decision:
+   - Data sources, and the Heart rate card when there is neither a live nor a stored trace.
+   - Sleep: Alarms and Sleep marks sit above the night; figures that look alike disagree (two
+     efficiencies, two sleep debts) and are probably different windows that need labels.
+   - Live session cards: state colour for working against recovering, and elapsed time.
+3. **Data page.** The owner finds it "missing something" but cannot yet say what, so nothing is
+   built on a guess: for a week the owner notes each question they opened Data to answer and
+   whether it did. Candidates to check those notes against: a mark and a "against your usual" line
+   per headline number (`TypicalRangeBar` in StrandDesign exists and is unused), a range control
+   with small trend lines, one plain finding with its sample size. Done already: the Charge
+   headline reads the same resolved Charge as Today (`Strand/Fork/ForkChargeNow.swift`), not the
+   newest raw recovery value. The same range mark should then replace the bars
+   on Today's Key metrics tiles: several of those bars are the value over an arbitrary constant
+   (HRV over 120, resting heart rate over 100) and say nothing.
+4. **Aura's type and primitives, as a trial on one screen.** Their design files need `#if os(iOS)`
+   around them (this app also builds watch and Mac targets, Aura does not) and the three font
+   licence texts shipped beside the fonts. Roll out only after the owner approves the trial.
+
+Deliberately not in this release:
+
+- **Upstream after 12.0.0.** `main` is an unreleased 12.1.0 test build: it adds a forward-only
+  database migration and about 450 changed lines in the strap connection code. Take it as its own
+  release, from an upstream release tag, after a `.noopbak` export, and never mixed with look work.
+- **Aura's features, storage or tab bar.** Look only. Aura's builds carry later database
+  migrations than this fork; installing one over this app is not reversible.
+
+Still owed from earlier releases: everything listed as "not proven" above needs a strap. Record
+what real use turns up as GitHub issues (no readings, no personal details: the repository is
+public) and fix those before widening the redesign.
+
+Pull requests: `gh`/the web UI default a fork's pull request to the parent repository. Always set
+the base to `shadhahshahid/noop` `custom`. Upstream's `app-build.yml` and `swift-packages.yml`
+trigger only on pull requests into `main`, so they do not run for pull requests into `custom`.
 
 ### Original briefs, kept for reference
 

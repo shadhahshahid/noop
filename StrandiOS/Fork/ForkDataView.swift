@@ -118,12 +118,28 @@ struct ForkDataView: View {
         }
         let whole: (Double) -> String = { String(Int($0.rounded())) }
         return [
-            tile(HeroRingMetric.charge, "Charge", days.compactMap(\.recovery), whole),
+            chargeHeadline(days: days, format: whole),
             tile(HeroRingMetric.effort, "Effort", days.compactMap(\.strain),
                  { UnitFormatter.effortDisplay($0, scale: effortScale) }),
             tile(HeroRingMetric.rest, "Sleep", sleepByDay.map(\.value), whole),
             tile("hrv", "HRV", days.compactMap(\.avgHrv), { String(localized: "\(Int($0.rounded())) ms") }),
         ]
+    }
+
+    /// Charge as Today shows it (`ForkChargeNow`): today's own score, else the last scored night's,
+    /// and no number while the baseline is still learning. The newest raw recovery value is not used:
+    /// it could disagree with Today. The average is of the scored nights before the one shown.
+    private func chargeHeadline(days: [DailyMetric], format: (Double) -> String) -> Headline {
+        let now = ForkChargeNow.resolve(repo: repo)
+        guard let pct = now.display.pct, let shownKey = now.scoredDayKey else {
+            return Headline(id: HeroRingMetric.charge, label: "Charge", value: "–",
+                            caption: now.display.stateLabel)
+        }
+        let earlier = days.filter { $0.day < shownKey }.compactMap(\.recovery).suffix(7)
+        let caption = earlier.isEmpty
+            ? String(localized: "First reading")
+            : String(localized: "7-day average \(format(earlier.reduce(0, +) / Double(earlier.count)))")
+        return Headline(id: HeroRingMetric.charge, label: "Charge", value: format(pct), caption: caption)
     }
 
     private var headlineGrid: some View {
