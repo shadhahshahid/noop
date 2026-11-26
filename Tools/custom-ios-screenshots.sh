@@ -14,15 +14,18 @@
 #       every other name is passed to `--demo-screen <name>` (see DemoScreens in
 #       StrandiOS/App/StrandiOSApp.swift). Add "-light" to any name to capture it in the light
 #       theme. Add "+N" to also capture N further screenfuls below the first, for example
-#       "shell+3" or "tab3-light+1"; those are written as <name>_p1.png … <name>_pN.png, and
-#       capture stops early at the bottom of the screen. With no screen names, a default set
-#       is captured.
+#       "shell+3" or "tab3-light+1"; those are written as <name>_p1.png … <name>_pN.png.
+#       Capture stops early when a screenful is byte-identical to the one before it, which
+#       happens on a screen that does not scroll; a screen with anything animating may repeat
+#       its last screenful instead. With no screen names, a default set is captured.
 
 set -euo pipefail
 
 # First launch seeds the synthetic history before anything renders; later launches only draw.
 SEED_WAIT="${SEED_WAIT:-45}"
 DRAW_WAIT="${DRAW_WAIT:-10}"
+# A full-size screenshot of a drawn screen is several hundred kilobytes; an all-black one is far smaller.
+BLANK_BYTES="${BLANK_BYTES:-60000}"
 
 pick_sim() {
   xcrun simctl list devices available --json | python3 -c '
@@ -110,6 +113,12 @@ capture() {
       xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
       sleep "$DRAW_WAIT"
       xcrun simctl io "$udid" screenshot "$file"
+      # A picture this small is a blank frame: the app had not drawn yet. Wait and take it once more.
+      if [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ]; then
+        echo "blank frame for $(basename "$file"); retrying"
+        sleep "$DRAW_WAIT"
+        xcrun simctl io "$udid" screenshot "$file"
+      fi
       # A screenful identical to the one before it means the bottom was already reached.
       if [ -n "$previous" ] && cmp -s "$previous" "$file"; then
         rm -f "$file"

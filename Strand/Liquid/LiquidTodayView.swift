@@ -579,11 +579,13 @@ struct LiquidTodayView: View {
                         Text(dayTitle)
                             .font(StrandFont.rounded(28))
                             .foregroundStyle(StrandPalette.textPrimary)
-                            .shadow(color: .black.opacity(0.4), radius: 10, y: 1)
+                            // Personal fork: no shadow. On the plain canvas it only smudged the
+                            // light theme; it was there to lift the text off the sky scene.
+                            .shadow(color: .clear, radius: 0)
                         Text(dateLine)
                             .font(StrandFont.caption)
                             .foregroundStyle(StrandPalette.textSecondary)
-                            .shadow(color: .black.opacity(0.35), radius: 8, y: 1)
+                            .shadow(color: .clear, radius: 0)   // Personal fork: as the title above.
                     }
                     .contentShape(Rectangle())
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -783,6 +785,8 @@ struct LiquidTodayView: View {
                     // stays translated (BEARBEITEN / MODIFIER / …) without a new literal.
                     Text(String(localized: "Edit").uppercased()).font(StrandFont.overlineScaled(11)).tracking(1.0)
                         .foregroundStyle(StrandPalette.accent)
+                        // Personal fork: a 44-point tap area.
+                        .forkTapTarget()
                 }
                 .buttonStyle(.plain)
             }
@@ -1361,6 +1365,8 @@ struct LiquidTodayView: View {
                         .font(StrandFont.overlineScaled(11))
                         .tracking(1.0)
                         .foregroundStyle(StrandPalette.accent)
+                        // Personal fork: a 44-point tap area.
+                        .forkTapTarget()
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Edit Key Metrics")
@@ -1400,16 +1406,20 @@ struct LiquidTodayView: View {
             // hero are the same number, so a carry that reached only one of them would put two answers for
             // Charge on one screen. (#543: one prior row feeds every recovery-derived read-out.) Strain below
             // stays raw, matching the Effort hero, which correctly does not carry.
-            ktile(String(localized: "Recovery"), icon: keyMetricIcon(metric), intText(chargeDisplay.pct), "%", StrandPalette.chargeColor, frac(chargeDisplay.pct), key: HeroRingMetric.charge)
+            // Personal fork: the tile uses the hero's name for the score ("Charge", not "Recovery") and the
+            // hero's state colour, from the same resolver, so the two cannot disagree.
+            ktile(String(localized: "Charge"), icon: keyMetricIcon(metric), intText(chargeDisplay.pct), "%", ForkTodayHero.stateColor(charge: chargeDisplay.pct), frac(chargeDisplay.pct), key: HeroRingMetric.charge)
         case .effort:
             // #492: Effort is a load index (0–100 NOOP / 0–21 WHOOP), NOT a percentage, and the unit was
             // wrong on either axis. Fixed on Android and in `TodayView` at the time; THIS view kept the old
             // form, so the tile also ignored the scale toggle — the hero ring above it read ~8 on the WHOOP
             // axis while this read 38. `effortText` is the same shared formatter the ring and the workout
             // rows use, so all three now agree by construction.
-            ktile(String(localized: "Strain"), icon: keyMetricIcon(metric), effortText(effortStrain(displayDay)), "", StrandPalette.effortColor, frac(effortStrain(displayDay)), key: HeroRingMetric.effort)
+            // Personal fork: "Effort", the hero's name for it (was "Strain").
+            ktile(String(localized: "Effort"), icon: keyMetricIcon(metric), effortText(effortStrain(displayDay)), "", StrandPalette.effortColor, frac(effortStrain(displayDay)), key: HeroRingMetric.effort)
         case .rest:
-            ktile(String(localized: "Rest"), icon: keyMetricIcon(metric), intText(restScore), "%", StrandPalette.restColor, frac(restScore), key: HeroRingMetric.rest)
+            // Personal fork: "Sleep", as the tab and the hero call it (was "Rest").
+            ktile(String(localized: "Sleep"), icon: keyMetricIcon(metric), intText(restScore), "%", StrandPalette.restColor, frac(restScore), key: HeroRingMetric.rest)
         case .hrv:
             ktile("HRV", icon: keyMetricIcon(metric), intText(hrv), "ms", StrandPalette.metricCyan, fracOver(hrv, 120), key: "hrv")
         case .restingHr:
@@ -1489,7 +1499,8 @@ struct LiquidTodayView: View {
                     // Personal fork: a fixed height too; symbols differ in height and shifted the row.
                     .frame(width: 14, height: 14)
                 Text(label.uppercased())
-                    .font(StrandFont.overlineScaled(10))
+                    // Personal fork: 11 points, the smallest size Apple's guidelines allow (was 10).
+                    .font(StrandFont.overlineScaled(11))
                     .tracking(1.0)
                     .foregroundStyle(StrandPalette.textTertiary)
                     .lineLimit(1)
@@ -1516,6 +1527,9 @@ struct LiquidTodayView: View {
             .frame(minHeight: ForkTodayTileMetrics.headBlockMinHeight, alignment: .topLeading)
             LiquidTube(frac: frac ?? 0, tint: tint, height: 9, animated: false,
                        showsHighlight: false, usesCleanFill: true)
+                // Personal fork: a bar is drawn only where its length means something. The space is
+                // kept, so every tile stays the same shape.
+                .opacity(ForkTodayTileMetrics.showsBar(key: key, hasValue: frac != nil) ? 1 : 0)
             // #430 parity: DETAILED tiles grow the trend graph under the bar, tinted to the metric and
             // windowed to the editor's 1-week / 2-week / 1-month choice (the Android twin). A metric with no
             // windowed series keeps a clear placeholder of the same height so every tile in a detailed row
@@ -1582,7 +1596,8 @@ struct LiquidTodayView: View {
                     }
                     Spacer()
                     (Text(effortText(w.strain)).font(StrandFont.number(15))
-                        + Text(" EFFORT").font(StrandFont.overlineScaled(9)))
+                        // Personal fork: 11 points, the smallest size Apple's guidelines allow (was 9).
+                        + Text(" EFFORT").font(StrandFont.overlineScaled(11)))
                         .foregroundStyle(StrandPalette.textPrimary)
                 }
                 LiquidTube(frac: (w.strain ?? 0) / 100, tint: StrandPalette.effortColor, height: 12, animated: false)
@@ -2141,7 +2156,8 @@ struct LiquidTodayView: View {
         // weekday + month names regardless of the UI language. A locale-aware field template localizes both
         // the names AND the field order (e.g. fr "mercredi 4 juillet") in the user's locale.
         return selectedLogicalDay.formatted(
-            .dateTime.weekday(.wide).day().month(.wide).locale(AppLanguage.activeLocale))
+            // Personal fork: a short weekday. "Wednesday, November 26" ran under the header buttons.
+            .dateTime.weekday(.abbreviated).day().month(.wide).locale(AppLanguage.activeLocale))
     }
 
     /// Provenance caption for the recovery-vitals card, keyed on the row a vital actually came from — NOT a
@@ -3306,7 +3322,8 @@ extension LiquidTodayView {
             details: details,
             effort: effortStrain(displayDay).map { UnitFormatter.effortValue($0, scale: scale) },
             effortMax: scale == .whoop ? 21 : 100,
-            effortDecimals: scale == .whoop ? 1 : 0,
+            // One decimal on both scales, as every other place that shows Effort does.
+            effortDecimals: 1,
             effortTarget: target)
     }
 

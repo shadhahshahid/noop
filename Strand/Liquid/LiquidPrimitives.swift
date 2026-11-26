@@ -615,7 +615,9 @@ struct LiquidScoreGauge: View {
                 }
             }
             .foregroundStyle(numberColor)
-            .shadow(color: .black.opacity(0.5), radius: 6, y: 1)
+            // Personal fork: no shadow behind the number. It was a grey smudge in the light theme and
+            // cannot be seen on the dark ring.
+            .shadow(color: .clear, radius: 0)
             .lineLimit(1)
             .minimumScaleFactor(0.6)
             .allowsHitTesting(false)

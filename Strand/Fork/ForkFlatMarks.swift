@@ -48,4 +48,28 @@ enum ForkTodayTileMetrics {
     /// the bar below lands at the same height whether or not a tile has a caption. Larger text
     /// sizes grow past it; nothing is clipped.
     static let headBlockMinHeight: CGFloat = 74
+
+    /// Whether a tile draws its bar. Only the three scores do: they run from nothing to full on a
+    /// real scale. The other tiles' bars were the value over an arbitrary constant (HRV over 120,
+    /// resting heart rate over 100, calories over 800), a length that says nothing, so those tiles
+    /// show their number alone until a "your usual range" mark replaces the bar.
+    static func showsBar(key: String?, hasValue: Bool) -> Bool {
+        guard hasValue, let key else { return false }
+        return HeroRingMetric.all.contains(key)
+    }
+}
+
+// Personal fork: small text buttons ("Edit", "All activities", "Customize") get the 44-point tap
+// area Apple's guidelines ask for, without moving anything on screen.
+extension View {
+    /// Use on a button's label. The label is padded out and made tappable, then the padding is
+    /// taken back, so the layout is unchanged and only the area that answers a tap grows.
+    func forkTapTarget(horizontal: CGFloat = 10, vertical: CGFloat = 15) -> some View {
+        self
+            .padding(.horizontal, horizontal)
+            .padding(.vertical, vertical)
+            .contentShape(Rectangle())
+            .padding(.horizontal, -horizontal)
+            .padding(.vertical, -vertical)
+    }
 }

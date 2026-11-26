@@ -30,6 +30,27 @@ struct ForkDriver: Identifiable, Equatable {
         case .bad:     return StrandPalette.statusCritical
         }
     }
+
+    /// The state as a shape, so it does not rest on colour alone. Not an arrow: for resting heart
+    /// rate "good" means lower, and an arrow would be read as the direction the number moved.
+    var symbol: String {
+        switch tone {
+        case .good:    return "checkmark.circle.fill"
+        case .neutral: return "minus.circle.fill"
+        case .watch:   return "exclamationmark.circle.fill"
+        case .bad:     return "exclamationmark.triangle.fill"
+        }
+    }
+
+    /// The state in a word, for VoiceOver.
+    var stateWord: String {
+        switch tone {
+        case .good:    return String(localized: "Good")
+        case .neutral: return String(localized: "Usual")
+        case .watch:   return String(localized: "Watch")
+        case .bad:     return String(localized: "Low")
+        }
+    }
 }
 
 /// Everything the hero draws. Effort values are already on the wearer's chosen display scale.
@@ -61,8 +82,12 @@ struct ForkTodayHero: View {
     private static let ringWidth: CGFloat = 12
 
     /// State colour for the score: the same three bands the Effort target is derived from.
-    private var chargeColor: Color {
-        guard let charge = model.charge else { return StrandPalette.textTertiary }
+    private var chargeColor: Color { Self.stateColor(charge: model.charge) }
+
+    /// The one place Charge is turned into a state colour. The hero ring and the Charge tile under
+    /// it both ask here, so the same score cannot be amber in one place and green in another.
+    static func stateColor(charge: Double?) -> Color {
+        guard let charge else { return StrandPalette.textTertiary }
         if charge >= 67 { return StrandPalette.statusPositive }
         if charge >= 34 { return StrandPalette.statusWarning }
         return StrandPalette.statusCritical
@@ -179,7 +204,11 @@ struct ForkTodayHero: View {
     private func driverCell(_ driver: ForkDriver) -> some View {
         VStack(spacing: NoopMetrics.space1) {
             HStack(spacing: 6) {
-                Circle().fill(driver.color).frame(width: 6, height: 6)
+                Image(systemName: driver.symbol)
+                    .font(StrandFont.caption)
+                    .imageScale(.small)
+                    .foregroundStyle(driver.color)
+                    .accessibilityLabel(driver.stateWord)
                 Text(verbatim: driver.label)
                     .font(StrandFont.caption)
                     .foregroundStyle(StrandPalette.textSecondary)
@@ -320,6 +349,7 @@ struct ForkQuickStarts: View {
                         Text("All activities")
                             .font(StrandFont.caption)
                             .foregroundStyle(StrandPalette.textSecondary)
+                            .forkTapTarget()
                     }
                     .buttonStyle(.plain)
                 }

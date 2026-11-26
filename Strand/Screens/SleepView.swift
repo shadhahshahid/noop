@@ -518,6 +518,8 @@ struct SleepView: View {
                 Label("Customize", systemImage: "slider.horizontal.3")
                     .font(StrandFont.footnote)
                     .foregroundStyle(StrandPalette.textTertiary)
+                    // Personal fork: a 44-point tap area.
+                    .forkTapTarget()
             }
             .buttonStyle(.plain)
         }
@@ -2644,7 +2646,9 @@ struct SleepMarkCard: View {
                     HStack(spacing: NoopMetrics.gap) {
                         // Routed through the unified NoopButton system so the two marks sit identically
                         // (sentence-case label, leading icon at 8pt, controlHeight=48, no glow).
-                        NoopButton("Going to sleep", systemImage: "moon.zzz.fill",
+                        // Personal fork: "Bedtime". "Going to sleep" did not fit half the card and was
+                        // cut to "Going to sl…". VoiceOver still reads the full "Log going to sleep".
+                        NoopButton("Bedtime", systemImage: "moon.zzz.fill",
                                    kind: .secondary, fullWidth: true) { logMark(.bedtime) }
                             .accessibilityLabel("Log going to sleep")
 

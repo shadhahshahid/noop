@@ -61,9 +61,10 @@ starts a comment). Without that file the script's default set is used. Names:
   `StrandiOS/App/StrandiOSApp.swift`. **Add a case there for every new screen** so it can be captured.
 - Add `-light` to any name to capture it in the light theme.
 - Add `+N` to any name to also capture N further screenfuls below the first (`shell+3`,
-  `tab3-light+1`). They are written as `<name>_p1.png` … and stop early at the bottom of the
-  screen. **Capture every screen to its bottom before calling it done:** the lower half of Today
-  went unreviewed through five releases because only the first screenful was photographed.
+  `tab3-light+1`). They are written as `<name>_p1.png` …; a screen with anything animating may
+  repeat its last screenful. **Capture every screen to its bottom before calling it done:** the
+  lower half of Today went unreviewed through five releases because only the first screenful was
+  photographed. A system notification can land on a capture; look, and re-run if one did.
 
 Things the screenshots cannot show: taps, animation, Bluetooth, GPS, haptics, and real data. Say so
 when reporting; the owner tests those on the phone.

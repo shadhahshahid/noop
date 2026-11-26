@@ -25,7 +25,7 @@ private struct ForkStatusBarScrim: ViewModifier {
                 let shape = LinearGradient(
                     stops: [
                         .init(color: .black, location: 0),
-                        .init(color: .black.opacity(0.94), location: inset / max(1, inset + Self.fade)),
+                        .init(color: .black, location: inset / max(1, inset + Self.fade)),
                         .init(color: .black.opacity(0), location: 1),
                     ],
                     startPoint: .top,
