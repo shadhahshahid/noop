@@ -196,6 +196,8 @@ is one pull request into `custom` and must prove what is listed before the next 
    scores, state symbols beside the hero's drivers, nothing under 11 points, and 44-point tap
    areas (`forkTapTarget`).
 
+   Shipped as the build named "Polish" (More → About).
+
    Decided by the owner and done in the same pull request:
    - Small rings in list rows (Recovery vitals, Your cards) are plain symbols now
      (`Strand/Fork/ForkRowSymbol.swift`), matching the Key metrics tile symbols.
