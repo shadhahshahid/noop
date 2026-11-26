@@ -1407,8 +1407,9 @@ struct LiquidTodayView: View {
             // Charge on one screen. (#543: one prior row feeds every recovery-derived read-out.) Strain below
             // stays raw, matching the Effort hero, which correctly does not carry.
             // Personal fork: the tile uses the hero's name for the score ("Charge", not "Recovery") and the
-            // hero's state colour, from the same resolver, so the two cannot disagree.
-            ktile(String(localized: "Charge"), icon: keyMetricIcon(metric), intText(chargeDisplay.pct), "%", ForkTodayHero.stateColor(charge: chargeDisplay.pct), frac(chargeDisplay.pct), key: HeroRingMetric.charge)
+            // hero's state colour, from the same resolver, so the two cannot disagree. No "%" either: the
+            // hero shows Charge as a bare score out of 100, and one score must read the same in both places.
+            ktile(String(localized: "Charge"), icon: keyMetricIcon(metric), intText(chargeDisplay.pct), "", ForkTodayHero.stateColor(charge: chargeDisplay.pct), frac(chargeDisplay.pct), key: HeroRingMetric.charge)
         case .effort:
             // #492: Effort is a load index (0–100 NOOP / 0–21 WHOOP), NOT a percentage, and the unit was
             // wrong on either axis. Fixed on Android and in `TodayView` at the time; THIS view kept the old
@@ -1418,8 +1419,9 @@ struct LiquidTodayView: View {
             // Personal fork: "Effort", the hero's name for it (was "Strain").
             ktile(String(localized: "Effort"), icon: keyMetricIcon(metric), effortText(effortStrain(displayDay)), "", StrandPalette.effortColor, frac(effortStrain(displayDay)), key: HeroRingMetric.effort)
         case .rest:
-            // Personal fork: "Sleep", as the tab and the hero call it (was "Rest").
-            ktile(String(localized: "Sleep"), icon: keyMetricIcon(metric), intText(restScore), "%", StrandPalette.restColor, frac(restScore), key: HeroRingMetric.rest)
+            // Personal fork: "Sleep", as the tab and the hero call it (was "Rest"), and a bare score with no
+            // "%", as the hero's Sleep driver and the Sleep tab show it.
+            ktile(String(localized: "Sleep"), icon: keyMetricIcon(metric), intText(restScore), "", StrandPalette.restColor, frac(restScore), key: HeroRingMetric.rest)
         case .hrv:
             ktile("HRV", icon: keyMetricIcon(metric), intText(hrv), "ms", StrandPalette.metricCyan, fracOver(hrv, 120), key: "hrv")
         case .restingHr:
