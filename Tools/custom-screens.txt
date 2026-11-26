@@ -3,4 +3,4 @@
 shell+3
 shell-light+3
 tab2+3 tab2-light+1
-tab1+1 tab3+1 tab4
+tab1+1 tab3+1 tab3-light tab4

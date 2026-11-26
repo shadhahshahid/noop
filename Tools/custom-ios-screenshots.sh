@@ -113,11 +113,22 @@ capture() {
       xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
       sleep "$DRAW_WAIT"
       xcrun simctl io "$udid" screenshot "$file"
-      # A picture this small is a blank frame: the app had not drawn yet. Wait and take it once more.
-      if [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ]; then
-        echo "blank frame for $(basename "$file"); retrying"
+      # A picture this small is a blank frame: the app had not drawn yet. Wait and take it again; one
+      # retry was not always enough (a dark paged capture came back blank twice), so the last attempt
+      # relaunches the app first. A frame still blank after that is reported, not hidden.
+      local attempt
+      for attempt in 1 2 3; do
+        [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ] || break
+        echo "blank frame for $(basename "$file"); retry $attempt"
+        if [ "$attempt" -eq 3 ]; then
+          xcrun simctl terminate "$udid" "$bundle_id" 2>/dev/null || true
+          xcrun simctl launch "$udid" "$bundle_id" "${page_args[@]}"
+        fi
         sleep "$DRAW_WAIT"
         xcrun simctl io "$udid" screenshot "$file"
+      done
+      if [ "$(wc -c < "$file")" -lt "$BLANK_BYTES" ]; then
+        echo "still blank after retries: $(basename "$file")"
       fi
       # A screenful identical to the one before it means the bottom was already reached.
       if [ -n "$previous" ] && cmp -s "$previous" "$file"; then
