@@ -189,6 +189,25 @@ is one pull request into `custom` and must prove what is listed before the next 
    used in about 50 places); hero-size rings keep it (`Strand/Fork/ForkFlatMarks.swift`). Also:
    tiles in a row line up, and nothing draws under the clock
    (`StrandiOS/Fork/ForkStatusBarScrim.swift`). Proves: paged dark and light screenshots.
+   After two independent reviews (one against Apple's Human Interface Guidelines, one product
+   critique) the same pull request also took: one name per score on Today's tiles (Charge,
+   Effort, Sleep), the Charge tile in the hero ring's state colour from one resolver
+   (`ForkTodayHero.stateColor`), Effort with one decimal everywhere, a bar only on the three
+   scores, state symbols beside the hero's drivers, nothing under 11 points, and 44-point tap
+   areas (`forkTapTarget`).
+
+   Raised by the reviews and waiting for the owner's decision:
+   - Small rings in list rows (Recovery vitals, Your cards): a ring around "34 yrs" measures
+     nothing. Replace with plain symbols?
+   - Sleep's hero ring is thick and banded, Today's a thin flat arc. Unify, or leave both?
+   - Today repeats HRV and resting heart rate up to four times. The owner's saved layout is
+     never overwritten, and upstream's default orders are pinned by its tests and mirror
+     Android, so the choices are: the owner trims with the Edit buttons, or the fork adds a
+     one-tap "tidy" the owner applies.
+   - Data sources, and the Heart rate card when there is neither a live nor a stored trace.
+   - Sleep: Alarms and Sleep marks sit above the night; figures that look alike disagree (two
+     efficiencies, two sleep debts) and are probably different windows that need labels.
+   - Live session cards: state colour for working against recovering, and elapsed time.
 3. **Data page.** The owner finds it "missing something"; ask before building. Candidates: a mark
    and a "against your usual" line per headline number (`TypicalRangeBar` in StrandDesign exists
    and is unused), a range control with small trend lines, one plain finding with its sample

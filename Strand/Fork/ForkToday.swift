@@ -234,6 +234,12 @@ struct ForkTodayHero: View {
             : String(format: "%.\(model.effortDecimals)f", value)
     }
 
+    /// A target is a guide, not a reading: whole numbers on the 0 to 100 scale ("Target 48 to 67"),
+    /// one decimal only on the 0 to 21 scale, where a whole step is too coarse.
+    private func targetNumber(_ value: Double) -> String {
+        model.effortMax > 21 ? String(Int(value.rounded())) : String(format: "%.1f", value)
+    }
+
     /// Where today's Effort sits against the band, in words.
     private var effortNote: (text: String, color: Color) {
         guard let effort = model.effort else {
@@ -243,7 +249,7 @@ struct ForkTodayHero: View {
             return (String(localized: "Target appears once Charge is scored"), StrandPalette.textTertiary)
         }
         if effort < target.lowerBound {
-            return (String(localized: "\(number(target.lowerBound - effort)) to reach your target"),
+            return (String(localized: "\(targetNumber(target.lowerBound - effort)) to reach your target"),
                     StrandPalette.textSecondary)
         }
         if effort <= target.upperBound {
@@ -261,7 +267,7 @@ struct ForkTodayHero: View {
                     .foregroundStyle(StrandPalette.textSecondary)
                 Spacer(minLength: NoopMetrics.space2)
                 if let target = model.effortTarget {
-                    Text(verbatim: String(localized: "Target \(number(target.lowerBound)) to \(number(target.upperBound))"))
+                    Text(verbatim: String(localized: "Target \(targetNumber(target.lowerBound)) to \(targetNumber(target.upperBound))"))
                         .font(StrandFont.caption)
                         .foregroundStyle(StrandPalette.textSecondary)
                 }
